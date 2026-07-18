@@ -93,7 +93,7 @@ button { font-family: var(--f); }
 .mbar-foot span:last-child { color: var(--ind-d); font-weight: 700; }
 
 /* Quick actions */
-.qa-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; margin-bottom: 12px; }
+.qa-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin-bottom: 12px; }
 .qa-btn { background: var(--white); border: 1px solid var(--g200); border-radius: var(--r); padding: 12px 6px; display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; font-family: var(--f); transition: all .12s; }
 .qa-btn:active { background: var(--g100); transform: scale(.96); }
 .qa-icon { width: 32px; height: 32px; border-radius: 9px; background: var(--ind-l); display: flex; align-items: center; justify-content: center; }

@@ -1,31 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { useGetCorrectionRequestsQuery, useReviewCorrectionMutation } from '@/lib/services/attendanceApi';
+import { useGetCorrectionRequestsQuery } from '@/lib/services/attendanceApi';
 import { unwrapList } from '@/lib/utils/queryParams';
 import { fmtDate, fmtTime } from '@/lib/utils/format';
-import { useToast, extractErrorMessage } from '@/lib/hooks';
 import RejectCorrectionModal from './RejectCorrectionModal';
+import ApproveCorrectionModal from './ApproveCorrectionModal';
 import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 
 export default function CorrectionsTab() {
   const [status, setStatus] = useState('pending');
   const { data, isLoading } = useGetCorrectionRequestsQuery({ status, page: 1, limit: 100 });
-  const [reviewCorrection] = useReviewCorrectionMutation();
-  const toast = useToast();
   const [rejectingId, setRejectingId] = useState(null);
+  const [approvingId, setApprovingId] = useState(null);
 
   const { items } = unwrapList(data);
-
-  async function handleApprove(id) {
-    try {
-      await reviewCorrection({ id, status: 'approved' }).unwrap();
-      toast('Correction approved');
-    } catch (err) {
-      toast(extractErrorMessage(err, 'Could not approve request.'), 'err');
-    }
-  }
+  const approving = approvingId ? items.find((c) => c._id === approvingId) : null;
 
   return (
     <div>
@@ -44,13 +35,13 @@ export default function CorrectionsTab() {
           <Spinner />
         ) : items.length ? (
           items.map((c) => {
-            const userName = typeof c.userId === 'object' ? `${c.userId?.firstName || ''} ${c.userId?.lastName || ''}`.trim() : 'Employee';
-            const recordDate = c.attendanceRecordId?.date || c.date;
+            const userName = typeof c.user === 'object' ? `${c.user?.firstName || ''} ${c.user?.lastName || ''}`.trim() : 'Employee';
+            const recordDate = c.date || c.attendanceRecord?.date;
             return (
               <div className="crow" key={c._id}>
                 <div className="cinfo">
                   <div className="cday">
-                    {userName} · {recordDate ? fmtDate(recordDate) : '—'}
+                    {userName || 'Employee'} · {recordDate ? fmtDate(recordDate) : '—'}
                   </div>
                   <div className="ctimes">
                     Requested: {fmtTime(c.requestedCheckIn)} — {fmtTime(c.requestedCheckOut)}
@@ -60,7 +51,7 @@ export default function CorrectionsTab() {
                 <span className={`lpill lp-${c.status}`}>{c.status}</span>
                 {c.status === 'pending' ? (
                   <div style={{ display: 'flex', gap: 4, marginLeft: 6 }}>
-                    <button className="btn btn-p btn-sm" style={{ padding: '4px 8px', fontSize: 10 }} onClick={() => handleApprove(c._id)}>
+                    <button className="btn btn-p btn-sm" style={{ padding: '4px 8px', fontSize: 10 }} onClick={() => setApprovingId(c._id)}>
                       ✓
                     </button>
                     <button className="btn btn-r btn-sm" style={{ padding: '4px 8px', fontSize: 10 }} onClick={() => setRejectingId(c._id)}>
@@ -76,6 +67,7 @@ export default function CorrectionsTab() {
         )}
       </div>
       <RejectCorrectionModal correctionId={rejectingId} onClose={() => setRejectingId(null)} />
+      <ApproveCorrectionModal correction={approving} onClose={() => setApprovingId(null)} />
     </div>
   );
 }

@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { CheckSquareIcon, ClockIcon, UserIcon } from '../icons';
+import { CheckSquareIcon, ClockIcon, UserIcon, EditIcon } from '../icons';
 
-export default function QuickActions({ onApplyLeave }) {
+export default function QuickActions({ onApplyLeave, onRequestCorrection }) {
   return (
     <div className="qa-grid">
       <button className="qa-btn" onClick={onApplyLeave}>
@@ -11,6 +11,12 @@ export default function QuickActions({ onApplyLeave }) {
           <CheckSquareIcon />
         </div>
         <span className="qa-lbl">Apply Leave</span>
+      </button>
+      <button className="qa-btn" onClick={onRequestCorrection}>
+        <div className="qa-icon">
+          <EditIcon />
+        </div>
+        <span className="qa-lbl">Correction</span>
       </button>
       <Link href="/history" className="qa-btn">
         <div className="qa-icon">

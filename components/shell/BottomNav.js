@@ -26,7 +26,9 @@ export default function BottomNav() {
   return (
     <nav className="bnav">
       {items.map(({ href, label, Icon }) => {
+
         const active = pathname === href || pathname?.startsWith(href + '/');
+        
         return (
           <Link key={href} href={href} className={`ni ${active ? 'on' : ''}`}>
             <Icon />

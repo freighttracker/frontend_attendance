@@ -1,7 +1,7 @@
 import { fmtCurrency, initials } from '@/lib/utils/format';
 import { SalaryStatusPill } from '../ui/StatusPill';
 
-export default function SalaryRow({ name, slip, onGenerate, onApprove, onMarkPaid, isBusy }) {
+export default function SalaryRow({ name, slip, onGenerate, onApprove, onPublish, onMarkPaid, isBusy }) {
   return (
     <div className="srow">
       <div className="uav" style={{ width: 32, height: 32, fontSize: 11, flexShrink: 0 }}>
@@ -33,6 +33,11 @@ export default function SalaryRow({ name, slip, onGenerate, onApprove, onMarkPai
               </button>
             ) : null}
             {slip.status === 'approved' ? (
+              <button className="btn btn-g btn-sm" style={{ padding: '4px 8px', fontSize: 10 }} disabled={isBusy} onClick={() => onPublish(slip.id)}>
+                Publish
+              </button>
+            ) : null}
+            {slip.status === 'published' ? (
               <button className="btn btn-g btn-sm" style={{ padding: '4px 8px', fontSize: 10 }} disabled={isBusy} onClick={() => onMarkPaid(slip.id)}>
                 Mark paid
               </button>

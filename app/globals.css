@@ -119,6 +119,9 @@ button { font-family: var(--f); }
 .ah { background: var(--amb-l); color: var(--amb); }
 .aa { background: var(--red-l); color: var(--red); }
 .al { background: var(--ind-l); color: var(--ind-d); }
+.aul { background: var(--g100); color: var(--g600); }
+.aw { background: var(--black); color: var(--white); }
+.ahol { background: #f3e8ff; color: #7c3aed; }
 
 /* Holiday row */
 .hrow { display: flex; align-items: center; gap: 9px; padding: 9px 0; border-bottom: 1px solid var(--g100); }
@@ -211,6 +214,7 @@ textarea.fi { resize: vertical; min-height: 68px; }
 .sst { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; text-transform: capitalize; }
 .sst-generated { background: var(--g100); color: var(--g600); }
 .sst-approved { background: var(--ind-l); color: var(--ind-d); }
+.sst-published { background: #e8f0fe; color: #2563eb; }
 .sst-paid { background: var(--grn-l); color: var(--grn); }
 
 /* Correction row */

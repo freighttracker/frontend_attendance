@@ -12,6 +12,7 @@ import SalaryExpenseChart from './charts/SalaryExpenseChart';
 import BonusDistributionChart from './charts/BonusDistributionChart';
 import {
   UsersIcon,
+  UserIcon,
   CheckSquareIcon,
   ClockIcon,
   MoneyIcon,
@@ -38,6 +39,8 @@ export default function PayrollDashboardTab({ onNavigate }) {
     <div className="fade-in">
       <div className="kpi-grid">
         <KpiCard icon={UsersIcon} tone="ind" label="Total Employees" value={s.totalEmployees ?? 0} />
+        <KpiCard icon={UserIcon} tone="grn" label="Active Employees" value={s.activeEmployees ?? 0} />
+        <KpiCard icon={UserIcon} tone="red" label="Inactive Employees" value={s.inactiveEmployees ?? 0} />
         <KpiCard icon={CheckIcon} tone="grn" label="Salary Generated" value={s.salaryGenerated ?? 0} />
         <KpiCard icon={ClockIcon} tone="amb" label="Pending Payroll" value={s.pendingPayroll ?? 0} />
         <KpiCard icon={MoneyIcon} tone="ind" label="Payroll Amount" value={s.payrollAmount ?? 0} format={fmtCurrency} />

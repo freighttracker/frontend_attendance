@@ -6,6 +6,8 @@ const ATTENDANCE_CLASS = {
   half_day: 'ah',
   on_leave: 'al',
   wfh: 'al',
+  weekend: 'aw',
+  holiday: 'ahol',
 };
 
 const LEAVE_CLASS = {
@@ -18,6 +20,7 @@ const LEAVE_CLASS = {
 const SALARY_CLASS = {
   generated: 'sst-generated',
   approved: 'sst-approved',
+  published: 'sst-published',
   paid: 'sst-paid',
 };
 

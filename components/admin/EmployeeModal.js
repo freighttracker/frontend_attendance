@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { useCreateEmployeeMutation, useUpdateEmployeeMutation } from '@/lib/services/usersApi';
 import { useToast, extractErrorMessage } from '@/lib/hooks';
+import { normalizeUser } from '@/lib/utils/normalize';
 import Modal from '../ui/Modal';
 import DynamicSalaryFields from './DynamicSalaryFields';
 
@@ -37,7 +38,7 @@ function formFromEmployee(employee) {
   };
 }
 
-function EmployeeForm({ onClose, employee }) {
+function EmployeeForm({ onClose, employee, onCreated }) {
   const isEdit = Boolean(employee);
   const [createEmployee, { isLoading: creating }] = useCreateEmployeeMutation();
   const [updateEmployee, { isLoading: updating }] = useUpdateEmployeeMutation();
@@ -94,11 +95,13 @@ function EmployeeForm({ onClose, employee }) {
         delete payload.employeeCode;
         await updateEmployee({ id: employee.id, ...payload }).unwrap();
         toast('Employee updated');
+        onClose();
       } else {
-        await createEmployee(payload).unwrap();
+        const result = await createEmployee(payload).unwrap();
         toast('Employee added');
+        onClose();
+        onCreated?.(normalizeUser(result?.data || result));
       }
-      onClose();
     } catch (err) {
       setError(extractErrorMessage(err, 'Could not save employee.'));
     }
@@ -190,10 +193,10 @@ function EmployeeForm({ onClose, employee }) {
   );
 }
 
-export default function EmployeeModal({ open, onClose, employee }) {
+export default function EmployeeModal({ open, onClose, employee, onCreated }) {
   return (
     <Modal open={open} onClose={onClose} title={employee ? 'Edit Employee' : 'Add Employee'} wide>
-      {open ? <EmployeeForm key={employee?.id || 'new'} onClose={onClose} employee={employee} /> : null}
+      {open ? <EmployeeForm key={employee?.id || 'new'} onClose={onClose} employee={employee} onCreated={onCreated} /> : null}
     </Modal>
   );
 }

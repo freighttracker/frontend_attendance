@@ -7,6 +7,7 @@ import {
   useGenerateSalarySlipMutation,
   useGenerateAllSalarySlipsMutation,
   useApproveSalarySlipMutation,
+  usePublishSalarySlipMutation,
 } from '@/lib/services/salaryApi';
 import { normalizeUser, normalizeSalarySlip } from '@/lib/utils/normalize';
 import { unwrapList } from '@/lib/utils/queryParams';
@@ -33,6 +34,7 @@ export default function SalaryTab() {
   const [generateSlip, { isLoading: generating }] = useGenerateSalarySlipMutation();
   const [generateAll, { isLoading: generatingAll }] = useGenerateAllSalarySlipsMutation();
   const [approveSlip, { isLoading: approving }] = useApproveSalarySlipMutation();
+  const [publishSlip, { isLoading: publishing }] = usePublishSalarySlipMutation();
 
   const { items: userItems } = unwrapList(usersData);
   const employees = userItems.map(normalizeUser).filter((u) => u.role === 'employee');
@@ -70,6 +72,15 @@ export default function SalaryTab() {
     }
   }
 
+  async function handlePublish(id) {
+    try {
+      await publishSlip(id).unwrap();
+      toast('Salary slip published');
+    } catch (err) {
+      toast(extractErrorMessage(err, 'Could not publish slip.'), 'err');
+    }
+  }
+
   function handlePrintAll() {
     setPrintMode(true);
     requestAnimationFrame(() => window.print());
@@ -82,7 +93,7 @@ export default function SalaryTab() {
     return () => window.removeEventListener('afterprint', reset);
   }, [printMode]);
 
-  const isBusy = generating || generatingAll || approving;
+  const isBusy = generating || generatingAll || approving || publishing;
   const isLoading = usersLoading || slipsLoading;
 
   return (
@@ -113,6 +124,7 @@ export default function SalaryTab() {
               isBusy={isBusy}
               onGenerate={() => handleGenerate(u.id)}
               onApprove={handleApprove}
+              onPublish={handlePublish}
               onMarkPaid={setPayingId}
             />
           ))

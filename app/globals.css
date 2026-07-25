@@ -183,11 +183,17 @@ textarea.fi { resize: vertical; min-height: 68px; }
 .macts { display: flex; gap: 8px; margin-top: 14px; }
 
 /* Admin tabs */
-.atabs { display: flex; gap: 3px; background: var(--g100); border-radius: var(--r); padding: 3px; margin-bottom: 14px; overflow-x: auto; scrollbar-width: none; }
+.atabs-wrap { position: relative; margin-bottom: 14px; }
+.atabs { display: flex; gap: 3px; background: var(--g100); border-radius: var(--r); padding: 3px; overflow-x: auto; scrollbar-width: none; }
 .atabs::-webkit-scrollbar { display: none; }
 .atab { padding: 7px 11px; border-radius: 8px; border: none; background: transparent; font-family: var(--f); font-size: 10px; font-weight: 800; color: var(--g400); cursor: pointer; transition: all .12s; white-space: nowrap; letter-spacing: .02em; text-transform: uppercase; }
 .atab.on { background: var(--white); color: var(--black); box-shadow: var(--s1); }
 .atab .pdot2 { display: inline-flex; background: var(--red); color: white; font-size: 8px; font-weight: 800; width: 13px; height: 13px; border-radius: 50%; align-items: center; justify-content: center; margin-left: 2px; vertical-align: middle; }
+
+/* Scroll affordance so extra tabs are never silently off-screen */
+.atabs-fade { position: absolute; top: 3px; bottom: 3px; width: 26px; display: flex; align-items: center; border: none; font-size: 14px; font-weight: 900; color: var(--g400); cursor: pointer; padding: 0; }
+.atabs-fade.left { left: 0; justify-content: flex-start; padding-left: 3px; background: linear-gradient(to right, var(--g100) 45%, transparent); border-radius: var(--r) 0 0 var(--r); }
+.atabs-fade.right { right: 0; justify-content: flex-end; padding-right: 3px; background: linear-gradient(to left, var(--g100) 45%, transparent); border-radius: 0 var(--r) var(--r) 0; }
 
 /* User row */
 .urow { display: flex; align-items: center; gap: 9px; padding: 11px 0; border-bottom: 1px solid var(--g100); }
@@ -442,6 +448,20 @@ textarea.fi { resize: vertical; min-height: 68px; }
 .modal.wide { max-width: 880px; }
 .modal.wide .modal-cols { display: grid; grid-template-columns: 1fr; gap: 16px; }
 @media (min-width: 800px) { .modal.wide .modal-cols { grid-template-columns: 1.5fr 1fr; } }
+
+/* Attendance calendar grid */
+.cal-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.cal-nav-label { font-size: 13px; font-weight: 800; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.cal-head { font-size: 9px; font-weight: 800; color: var(--g400); text-align: center; padding-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.cal-cell { border: 1px solid var(--g200); border-radius: 9px; min-height: 64px; padding: 5px; background: var(--white); }
+.cal-cell.empty { border: none; background: transparent; }
+.cal-cell.is-today { border-color: var(--ind); border-width: 1.5px; }
+.cal-daynum { font-size: 11px; font-weight: 800; }
+.cal-cell .apill { font-size: 8px; padding: 2px 6px; margin-top: 3px; display: inline-block; }
+.cal-times { font-size: 8px; color: var(--g400); margin-top: 3px; line-height: 1.35; }
+.cal-flags { font-size: 8px; color: var(--amb); margin-top: 1px; line-height: 1.35; }
+@media (min-width: 640px) { .cal-cell { min-height: 84px; padding: 7px; } .cal-daynum { font-size: 12px; } .cal-cell .apill { font-size: 9px; } .cal-times, .cal-flags { font-size: 9px; } }
 
 /* Floating action button */
 .fab { position: fixed; right: 18px; bottom: max(82px, calc(66px + env(safe-area-inset-bottom))); width: 50px; height: 50px; border-radius: 50%; background: var(--ind); color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: var(--s3); cursor: pointer; z-index: 90; transition: transform .12s; }

@@ -99,6 +99,23 @@ export default function HeroPunchCard() {
           Out: <b>{fmtTime(record?.checkOut)}</b>
         </span>
       </div>
+      {data?.officeStartTime ? (
+        <div className="hero-meta" style={{ marginTop: 4 }}>
+          <span>
+            Office: <b>{data.officeStartTime}–{data.officeEndTime}</b>
+          </span>
+          <span>
+            Grace: <b>{data.graceBeforeMinutes || 0}m / {data.graceAfterMinutes || 0}m</b>
+          </span>
+        </div>
+      ) : null}
+      {data?.isLate || data?.overtimeHours > 0 || data?.isEarlyCheckin ? (
+        <div className="hero-meta" style={{ marginTop: 4 }}>
+          {data.isLate ? <span style={{ color: 'var(--red)' }}>Late {data.lateMinutes}m</span> : null}
+          {data.overtimeHours > 0 ? <span style={{ color: 'var(--grn)' }}>Overtime {data.overtimeHours}h</span> : null}
+          {data.isEarlyCheckin ? <span style={{ color: 'var(--amb)' }}>Early check-in {data.earlyCheckinMinutes}m</span> : null}
+        </div>
+      ) : null}
       <div className="hero-err">{error}</div>
 
       <Modal

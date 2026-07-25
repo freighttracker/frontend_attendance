@@ -8,6 +8,7 @@ const ATTENDANCE_CLASS = {
   wfh: 'al',
   weekend: 'aw',
   holiday: 'ahol',
+  upcoming: 'aul',
 };
 
 const LEAVE_CLASS = {

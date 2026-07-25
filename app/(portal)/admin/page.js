@@ -12,6 +12,7 @@ import CorrectionsTab from '@/components/admin/CorrectionsTab';
 import HolidaysTab from '@/components/admin/HolidaysTab';
 import ReportsTab from '@/components/admin/ReportsTab';
 import AttendanceReportTab from '@/components/admin/AttendanceReportTab';
+import AttendanceCalendarTab from '@/components/admin/AttendanceCalendarTab';
 import SettingsTab from '@/components/admin/SettingsTab';
 
 const TABS = [
@@ -22,6 +23,7 @@ const TABS = [
   { key: 'corrections', label: 'Correct' },
   { key: 'holidays', label: 'Holidays' },
   { key: 'attendanceReport', label: 'Attendance Report' },
+  { key: 'attendanceCalendar', label: 'Calendar' },
   { key: 'reports', label: 'Reports' },
   { key: 'settings', label: 'Settings' },
 ];
@@ -47,6 +49,7 @@ export default function AdminPage() {
       {active === 'corrections' ? <CorrectionsTab /> : null}
       {active === 'holidays' ? <HolidaysTab /> : null}
       {active === 'attendanceReport' ? <AttendanceReportTab /> : null}
+      {active === 'attendanceCalendar' ? <AttendanceCalendarTab /> : null}
       {active === 'reports' ? <ReportsTab /> : null}
       {active === 'settings' ? <SettingsTab /> : null}
     </>

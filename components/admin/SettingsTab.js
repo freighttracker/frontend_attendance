@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   useGetSettingQuery,
   useCreateSettingMutation,
@@ -10,6 +10,7 @@ import {
   useGetSandwichPolicyQuery,
   useUpdateSandwichPolicyMutation,
 } from '@/lib/services/settingsApi';
+import { useGetAttendanceSettingsQuery, useUpdateAttendanceSettingsMutation } from '@/lib/services/attendanceApi';
 import { useGetWeekendConfigsQuery, useBulkUpdateWeekendConfigsMutation } from '@/lib/services/weekendsApi';
 import { unwrapList } from '@/lib/utils/queryParams';
 import { useToast, extractErrorMessage } from '@/lib/hooks';
@@ -62,6 +63,155 @@ function CompanySettingCard() {
     <div className="card">
       <div className="card-label">Company</div>
       {isLoading ? <Spinner /> : <CompanyNameForm initialValue={data?.settingValue ?? ''} />}
+    </div>
+  );
+}
+
+function AttendanceSettingsForm({ initial }) {
+  const [updateSettings, { isLoading: saving }] = useUpdateAttendanceSettingsMutation();
+  const toast = useToast();
+  const [form, setForm] = useState({
+    checkInTime: initial.checkInTime || '09:00',
+    checkOutTime: initial.checkOutTime || '18:00',
+    lunchBreakMinutes: initial.lunchBreakMinutes ?? 0,
+    graceBeforeMinutes: initial.graceBeforeMinutes ?? 0,
+    gracePeriodMinutes: initial.gracePeriodMinutes ?? 15,
+    allowedEarlyCheckinMinutes: initial.allowedEarlyCheckinMinutes ?? 60,
+    earlyCheckinAction: initial.earlyCheckinAction || 'mark',
+    halfDayHours: initial.halfDayHours ?? 4,
+    fullDayHours: initial.fullDayHours ?? 8,
+    absentThresholdHours: initial.absentThresholdHours ?? 2,
+    overtimeThreshold: initial.overtimeThreshold ?? 8,
+  });
+  const [error, setError] = useState('');
+
+  function set(field) {
+    return (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
+  }
+
+  // Recomputed live as the admin types, matching what the backend will
+  // report back once saved - never subtracted from an employee's actual
+  // clocked hours, purely a "here's what a full office day looks like" figure.
+  const expectedWorkingHours = useMemo(() => {
+    if (!form.checkInTime || !form.checkOutTime) return 0;
+    const [sh, sm] = form.checkInTime.split(':').map(Number);
+    const [eh, em] = form.checkOutTime.split(':').map(Number);
+    const minutes = (eh * 60 + em) - (sh * 60 + sm) - (Number(form.lunchBreakMinutes) || 0);
+    return Math.max(minutes, 0) / 60;
+  }, [form.checkInTime, form.checkOutTime, form.lunchBreakMinutes]);
+
+  async function handleSave() {
+    setError('');
+    if (form.checkOutTime <= form.checkInTime) {
+      setError('Office end time must be after office start time.');
+      return;
+    }
+    try {
+      await updateSettings({
+        checkInTime: form.checkInTime,
+        checkOutTime: form.checkOutTime,
+        lunchBreakMinutes: Number(form.lunchBreakMinutes),
+        graceBeforeMinutes: Number(form.graceBeforeMinutes),
+        gracePeriodMinutes: Number(form.gracePeriodMinutes),
+        allowedEarlyCheckinMinutes: Number(form.allowedEarlyCheckinMinutes),
+        earlyCheckinAction: form.earlyCheckinAction,
+        halfDayHours: Number(form.halfDayHours),
+        fullDayHours: Number(form.fullDayHours),
+        absentThresholdHours: Number(form.absentThresholdHours),
+        overtimeThreshold: Number(form.overtimeThreshold),
+      }).unwrap();
+      toast('Attendance settings saved');
+    } catch (err) {
+      setError(extractErrorMessage(err, 'Could not save attendance settings.'));
+    }
+  }
+
+  return (
+    <>
+      <div className="frow">
+        <div className="ff">
+          <label className="fl">Office start time</label>
+          <input className="fi" type="time" value={form.checkInTime} onChange={set('checkInTime')} />
+        </div>
+        <div className="ff">
+          <label className="fl">Office end time</label>
+          <input className="fi" type="time" value={form.checkOutTime} onChange={set('checkOutTime')} />
+        </div>
+      </div>
+      <div className="frow">
+        <div className="ff">
+          <label className="fl">Lunch break, minutes (optional)</label>
+          <input className="fi" type="number" min="0" value={form.lunchBreakMinutes} onChange={set('lunchBreakMinutes')} />
+        </div>
+        <div className="ff">
+          <label className="fl">Working hours (auto-calculated)</label>
+          <div style={{ fontSize: 13, fontWeight: 700, padding: '9px 0' }}>{expectedWorkingHours.toFixed(2)}h</div>
+        </div>
+      </div>
+
+      <div className="card-label" style={{ marginTop: 14 }}>Grace period</div>
+      <div className="frow">
+        <div className="ff">
+          <label className="fl">Before office time (minutes)</label>
+          <input className="fi" type="number" min="0" value={form.graceBeforeMinutes} onChange={set('graceBeforeMinutes')} />
+        </div>
+        <div className="ff">
+          <label className="fl">After office time (minutes)</label>
+          <input className="fi" type="number" min="0" value={form.gracePeriodMinutes} onChange={set('gracePeriodMinutes')} />
+        </div>
+      </div>
+
+      <div className="card-label" style={{ marginTop: 14 }}>Early check-in</div>
+      <div className="frow">
+        <div className="ff">
+          <label className="fl">Allow check-in from (minutes before office time)</label>
+          <input className="fi" type="number" min="0" value={form.allowedEarlyCheckinMinutes} onChange={set('allowedEarlyCheckinMinutes')} />
+        </div>
+        <div className="ff">
+          <label className="fl">If checked in earlier than that</label>
+          <select className="fi" value={form.earlyCheckinAction} onChange={set('earlyCheckinAction')}>
+            <option value="mark">Allow, mark as early check-in</option>
+            <option value="reject">Reject the check-in</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="card-label" style={{ marginTop: 14 }}>Half day, absent &amp; overtime</div>
+      <div className="frow">
+        <div className="ff">
+          <label className="fl">Half day after (hours)</label>
+          <input className="fi" type="number" min="0" step="0.5" value={form.halfDayHours} onChange={set('halfDayHours')} />
+        </div>
+        <div className="ff">
+          <label className="fl">Full day (hours)</label>
+          <input className="fi" type="number" min="0" step="0.5" value={form.fullDayHours} onChange={set('fullDayHours')} />
+        </div>
+      </div>
+      <div className="frow">
+        <div className="ff">
+          <label className="fl">Mark absent if worked less than (hours)</label>
+          <input className="fi" type="number" min="0" step="0.5" value={form.absentThresholdHours} onChange={set('absentThresholdHours')} />
+        </div>
+        <div className="ff">
+          <label className="fl">Overtime after (hours)</label>
+          <input className="fi" type="number" min="0" step="0.5" value={form.overtimeThreshold} onChange={set('overtimeThreshold')} />
+        </div>
+      </div>
+
+      <div className="ferr">{error}</div>
+      <button className="btn btn-p btn-sm" style={{ marginTop: 8 }} disabled={saving} onClick={handleSave}>
+        {saving ? 'Saving…' : 'Save attendance settings'}
+      </button>
+    </>
+  );
+}
+
+function AttendanceSettingsCard() {
+  const { data, isLoading } = useGetAttendanceSettingsQuery();
+  return (
+    <div className="card">
+      <div className="card-label">Attendance settings</div>
+      {isLoading ? <Spinner /> : <AttendanceSettingsForm key={data?._id} initial={data || {}} />}
     </div>
   );
 }
@@ -254,6 +404,7 @@ export default function SettingsTab() {
   return (
     <div>
       <CompanySettingCard />
+      <AttendanceSettingsCard />
       <AttendanceRulesCard />
       <SandwichPolicyCard />
       <WeekendConfigCard />

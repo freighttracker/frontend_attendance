@@ -21,8 +21,14 @@ import Spinner from '../ui/Spinner';
 import { MONTH_NAMES } from '@/lib/utils/format';
 
 export default function SalaryTab() {
-  const now = new Date();
-  const [period, setPeriod] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
+  // Default to last month, not the current (still in-progress) one - payroll
+  // for a month that hasn't ended yet is always incomplete (days that haven't
+  // happened can't be marked absent), so generating against it silently
+  // undercounts deductions until the admin manually changes the period.
+  const lastMonth = new Date();
+  lastMonth.setDate(1);
+  lastMonth.setMonth(lastMonth.getMonth() - 1);
+  const [period, setPeriod] = useState(`${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`);
   const [loadedPeriod, setLoadedPeriod] = useState(period);
   const [year, month] = loadedPeriod.split('-').map(Number);
   const [payingId, setPayingId] = useState(null);

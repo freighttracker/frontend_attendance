@@ -12,8 +12,12 @@ import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 
 export default function GeneratePayrollTab() {
-  const now = new Date();
-  const [period, setPeriod] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}`);
+  // Default to last month - a month still in progress has no way to know its
+  // final attendance yet, so generating against it always undercounts absences.
+  const lastMonth = new Date();
+  lastMonth.setDate(1);
+  lastMonth.setMonth(lastMonth.getMonth() - 1);
+  const [period, setPeriod] = useState(`${lastMonth.getFullYear()}-${pad(lastMonth.getMonth() + 1)}`);
   const [department, setDepartment] = useState('');
   const [designation, setDesignation] = useState('');
   const [selected, setSelected] = useState(() => new Set());

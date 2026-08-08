@@ -8,7 +8,9 @@ import Spinner from '../ui/Spinner';
 import EmptyState from '../ui/EmptyState';
 import { SalaryStatusPill } from '../ui/StatusPill';
 
+
 export default function SalaryHistoryTimeline({ userId, onSelect }) {
+  
   const { data, isLoading } = useGetAllSalarySlipsQuery({ userId, page: 1, limit: 24 }, { skip: !userId });
   const { items } = unwrapList(data);
   const slips = items.map(normalizeSalarySlip).sort((a, b) => (b.year - a.year) || (b.month - a.month));

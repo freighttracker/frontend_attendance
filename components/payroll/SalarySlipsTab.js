@@ -17,9 +17,12 @@ import Spinner from '../ui/Spinner';
 import { DownloadIcon, PrinterIcon, MailIcon, ShareIcon } from '../icons';
 
 export default function SalarySlipsTab() {
-  const now = new Date();
+  // Default to last month - the current month rarely has a finished slip yet.
+  const lastMonth = new Date();
+  lastMonth.setDate(1);
+  lastMonth.setMonth(lastMonth.getMonth() - 1);
   const [userId, setUserId] = useState('');
-  const [period, setPeriod] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}`);
+  const [period, setPeriod] = useState(`${lastMonth.getFullYear()}-${pad(lastMonth.getMonth() + 1)}`);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [printMode, setPrintMode] = useState(false);
   const toast = useToast();

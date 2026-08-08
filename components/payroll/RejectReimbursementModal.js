@@ -6,6 +6,7 @@ import { useToast, extractErrorMessage } from '@/lib/hooks';
 import Modal from '../ui/Modal';
 
 export default function RejectReimbursementModal({ reimbursementId, onClose }) {
+  
   const [rejectReimbursement, { isLoading }] = useRejectReimbursementMutation();
   const toast = useToast();
   const [reason, setReason] = useState('');

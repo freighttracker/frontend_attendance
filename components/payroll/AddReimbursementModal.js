@@ -79,10 +79,12 @@ function AddReimbursementForm({ onClose, employees }) {
 }
 
 export default function AddReimbursementModal({ open, onClose, employees }) {
+
   return (
     <Modal open={open} onClose={onClose} title="Add Reimbursement">
       {open ? <AddReimbursementForm onClose={onClose} employees={employees} /> : null}
     </Modal>
   );
+  
 }
   

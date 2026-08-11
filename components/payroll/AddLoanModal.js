@@ -7,6 +7,7 @@ import { todayISO } from '@/lib/utils/format';
 import Modal from '../ui/Modal';
 
 function AddLoanForm({ onClose, employees }) {
+
   const [createLoan, { isLoading }] = useCreateLoanMutation();
   const toast = useToast();
   const [userId, setUserId] = useState(employees[0]?.id || '');
@@ -31,6 +32,7 @@ function AddLoanForm({ onClose, employees }) {
     } catch (err) {
       setError(extractErrorMessage(err, 'Could not add loan.'));
     }
+    
   }
 
   return (
@@ -83,7 +85,7 @@ function AddLoanForm({ onClose, employees }) {
   );
 }
 
-export default function AddLoanModal({ open, onClose, employees }) {
+export default function ({ open, onClose, employees }) {
   return (
     <Modal open={open} onClose={onClose} title="Add Loan / Advance">
       {open ? <AddLoanForm onClose={onClose} employees={employees} /> : null}

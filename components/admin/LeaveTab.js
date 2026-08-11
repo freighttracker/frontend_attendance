@@ -1,33 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { useGetAllLeavesQuery, useReviewLeaveMutation } from '@/lib/services/leavesApi';
+import { useGetAllLeavesQuery } from '@/lib/services/leavesApi';
 import { normalizeLeave } from '@/lib/utils/normalize';
 import { unwrapList } from '@/lib/utils/queryParams';
-import { useToast, extractErrorMessage } from '@/lib/hooks';
-import LeaveRow from '../leave/LeaveRow';
 import RejectLeaveModal from './RejectLeaveModal';
+import ApproveLeaveModal from './ApproveLeaveModal';
 import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 
 export default function LeaveTab() {
   const [status, setStatus] = useState('pending');
   const { data, isLoading } = useGetAllLeavesQuery({ status, page: 1, limit: 100 });
-  const [reviewLeave] = useReviewLeaveMutation();
-  const toast = useToast();
   const [rejectingId, setRejectingId] = useState(null);
+  const [approvingLeave, setApprovingLeave] = useState(null);
 
   const { items } = unwrapList(data);
   const leaves = items.map(normalizeLeave).sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''));
-
-  async function handleApprove(id) {
-    try {
-      await reviewLeave({ id, status: 'approved' }).unwrap();
-      toast('Leave approved');
-    } catch (err) {
-      toast(extractErrorMessage(err, 'Could not approve leave.'), 'err');
-    }
-  }
 
   return (
     <div>
@@ -48,13 +37,14 @@ export default function LeaveTab() {
         ) : leaves.length ? (
           leaves.map((leave) => (
             <div key={leave.id} className="litem">
-              <LeaveRowContent leave={leave} onApprove={handleApprove} onReject={setRejectingId} />
+              <LeaveRowContent leave={leave} onApprove={setApprovingLeave} onReject={setRejectingId} />
             </div>
           ))
         ) : (
           <EmptyState>No leave requests</EmptyState>
         )}
       </div>
+      <ApproveLeaveModal key={approvingLeave?.id || 'none'} leave={approvingLeave} onClose={() => setApprovingLeave(null)} />
       <RejectLeaveModal leaveId={rejectingId} onClose={() => setRejectingId(null)} />
     </div>
   );
@@ -79,12 +69,20 @@ function LeaveRowContent({ leave, onApprove, onReject }) {
             {leave.totalDays} day{leave.totalDays > 1 ? 's' : ''}
           </div>
         ) : null}
+        {leave.status === 'approved' && leave.paidStatus ? (
+          <div className="ldays-label">
+            Paid: {leave.paidDays} · Unpaid: {leave.unpaidDays}
+          </div>
+        ) : null}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
         <span className={`lpill lp-${leave.status}`}>{leave.status}</span>
+        {leave.status === 'approved' && leave.paidStatus ? (
+          <span className={`lpill lp-pay-${leave.paidStatus}`}>{leave.paidStatus}</span>
+        ) : null}
         {leave.status === 'pending' ? (
           <div style={{ display: 'flex', gap: 4 }}>
-            <button className="btn btn-p btn-sm" style={{ padding: '4px 8px', fontSize: 10 }} onClick={() => onApprove(leave.id)}>
+            <button className="btn btn-p btn-sm" style={{ padding: '4px 8px', fontSize: 10 }} onClick={() => onApprove(leave)}>
               ✓
             </button>
             <button className="btn btn-r btn-sm" style={{ padding: '4px 8px', fontSize: 10 }} onClick={() => onReject(leave.id)}>
@@ -96,3 +94,6 @@ function LeaveRowContent({ leave, onApprove, onReject }) {
     </>
   );
 }
+
+
+

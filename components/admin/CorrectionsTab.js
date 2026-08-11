@@ -67,7 +67,7 @@ export default function CorrectionsTab() {
         )}
       </div>
       <RejectCorrectionModal correctionId={rejectingId} onClose={() => setRejectingId(null)} />
-      <ApproveCorrectionModal correction={approving} onClose={() => setApprovingId(null)} />
+      <ApproveCorrectionModal key={approving?._id || 'none'} correction={approving} onClose={() => setApprovingId(null)} />
     </div>
   );
 }

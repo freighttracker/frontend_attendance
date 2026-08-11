@@ -145,6 +145,9 @@ button { font-family: var(--f); }
 .lp-approved { background: var(--grn-l); color: var(--grn); }
 .lp-rejected { background: var(--red-l); color: var(--red); }
 .lp-cancelled { background: var(--g100); color: var(--g600); }
+.lp-pay-paid { background: var(--grn-l); color: var(--grn); }
+.lp-pay-unpaid { background: var(--red-l); color: var(--red); }
+.lp-pay-partial { background: var(--amb-l); color: var(--amb); }
 
 /* Page header */
 .ph { margin-bottom: 16px; }

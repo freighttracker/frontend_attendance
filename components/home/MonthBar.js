@@ -4,6 +4,7 @@ import { useGetWorkingHoursQuery } from '@/lib/services/attendanceApi';
 import { MONTH_NAMES } from '@/lib/utils/format';
 
 export default function MonthBar() {
+  
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;

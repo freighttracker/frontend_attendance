@@ -6,6 +6,7 @@ import { unwrapList } from '@/lib/utils/queryParams';
 import { fmtDate, fmtTime } from '@/lib/utils/format';
 import RejectCorrectionModal from './RejectCorrectionModal';
 import ApproveCorrectionModal from './ApproveCorrectionModal';
+import DirectCorrectionModal from './DirectCorrectionModal';
 import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 
@@ -14,13 +15,14 @@ export default function CorrectionsTab() {
   const { data, isLoading } = useGetCorrectionRequestsQuery({ status, page: 1, limit: 100 });
   const [rejectingId, setRejectingId] = useState(null);
   const [approvingId, setApprovingId] = useState(null);
+  const [directOpen, setDirectOpen] = useState(false);
 
   const { items } = unwrapList(data);
   const approving = approvingId ? items.find((c) => c._id === approvingId) : null;
 
   return (
     <div>
-      <div className="frow" style={{ marginBottom: 11 }}>
+      <div className="frow" style={{ marginBottom: 11, alignItems: 'center' }}>
         <div className="ff" style={{ margin: 0 }}>
           <select className="fi" style={{ fontSize: 12, padding: '9px 11px' }} value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="">All statuses</option>
@@ -29,6 +31,9 @@ export default function CorrectionsTab() {
             <option value="rejected">Rejected</option>
           </select>
         </div>
+        <button className="btn btn-p btn-sm" style={{ marginLeft: 'auto' }} onClick={() => setDirectOpen(true)}>
+          Direct Correction
+        </button>
       </div>
       <div className="card" style={{ padding: '0 16px' }}>
         {isLoading ? (
@@ -68,6 +73,7 @@ export default function CorrectionsTab() {
       </div>
       <RejectCorrectionModal correctionId={rejectingId} onClose={() => setRejectingId(null)} />
       <ApproveCorrectionModal key={approving?._id || 'none'} correction={approving} onClose={() => setApprovingId(null)} />
+      <DirectCorrectionModal open={directOpen} onClose={() => setDirectOpen(false)} />
     </div>
   );
 }

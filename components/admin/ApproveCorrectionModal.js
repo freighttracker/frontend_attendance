@@ -6,6 +6,15 @@ import { useToast, extractErrorMessage } from '@/lib/hooks';
 import { fmtDate, fmtTime, pad } from '@/lib/utils/format';
 import Modal from '../ui/Modal';
 
+const OVERRIDE_STATUS_OPTIONS = [
+  { value: '', label: 'Auto-calculate from time' },
+  { value: 'present', label: 'Full Day (Present)' },
+  { value: 'half_day', label: 'Half Day' },
+  { value: 'absent', label: 'Absent' },
+  { value: 'wfh', label: 'Work From Home' },
+  { value: 'on_leave', label: 'On Leave' },
+];
+
 // Native <input type="time"> works in 24h "HH:mm" - convert a stored
 // Date/ISO value to that shape so the field can be edited.
 function toTimeInputValue(value) {
@@ -21,6 +30,7 @@ export default function ApproveCorrectionModal({ correction, onClose }) {
 
   const [checkInTime, setCheckInTime] = useState(() => toTimeInputValue(correction?.requestedCheckIn));
   const [checkOutTime, setCheckOutTime] = useState(() => toTimeInputValue(correction?.requestedCheckOut));
+  const [overrideStatus, setOverrideStatus] = useState('');
   const [error, setError] = useState('');
 
   if (!correction) return null;
@@ -43,6 +53,9 @@ export default function ApproveCorrectionModal({ correction, onClose }) {
     }
     if (dateOnly && checkOutTime && checkOutTime !== toTimeInputValue(correction.requestedCheckOut)) {
       body.requestedCheckOut = `${dateOnly}T${checkOutTime}:00`;
+    }
+    if (overrideStatus) {
+      body.overrideStatus = overrideStatus;
     }
 
     try {
@@ -86,6 +99,14 @@ export default function ApproveCorrectionModal({ correction, onClose }) {
           <label className="fl">Check-out (edit if wrong)</label>
           <input className="fi" type="time" value={checkOutTime} onChange={(e) => setCheckOutTime(e.target.value)} />
         </div>
+      </div>
+      <div className="ff">
+        <label className="fl">Count this day as</label>
+        <select className="fi" value={overrideStatus} onChange={(e) => setOverrideStatus(e.target.value)}>
+          {OVERRIDE_STATUS_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
       </div>
       <div className="ff">
         <label className="fl">Reason</label>

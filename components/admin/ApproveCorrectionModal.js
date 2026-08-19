@@ -41,11 +41,6 @@ export default function ApproveCorrectionModal({ correction, onClose }) {
 
   async function handleConfirm() {
     setError('');
-    if (checkInTime && checkOutTime && checkOutTime < checkInTime) {
-      setError(`Check-out (${checkOutTime}) is earlier than check-in (${checkInTime}) - did you mean to pick the other AM/PM?`);
-      return;
-    }
-
 
     const body = { id: correction._id, status: 'approved' };
     if (dateOnly && checkInTime && checkInTime !== toTimeInputValue(correction.requestedCheckIn)) {

@@ -63,11 +63,6 @@ export default function DirectCorrectionModal({ open, onClose }) {
       setError('Provide a check-in/check-out time and/or a status to force.');
       return;
     }
-    if (checkInTime && checkOutTime && checkOutTime < checkInTime) {
-      setError(`Check-out (${checkOutTime}) is earlier than check-in (${checkInTime}) - did you mean to pick the other AM/PM?`);
-      return;
-    }
-
     const body = { userId, date, reason: reason.trim() };
     if (checkInTime) body.checkInTime = `${date}T${checkInTime}:00`;
     if (checkOutTime) body.checkOutTime = `${date}T${checkOutTime}:00`;

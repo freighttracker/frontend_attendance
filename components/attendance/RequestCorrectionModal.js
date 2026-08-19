@@ -30,10 +30,6 @@ function RequestCorrectionForm({ defaultDate, onClose }) {
       setError('Provide a check-in and/or check-out time.');
       return;
     }
-    if (checkInTime && checkOutTime && checkOutTime < checkInTime) {
-      setError(`Check-out (${checkOutTime}) is earlier than check-in (${checkInTime}) on the same day - check you picked AM/PM correctly.`);
-      return;
-    }
     if (!reason.trim()) {
       setError('Reason is required.');
       return;

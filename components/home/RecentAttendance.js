@@ -25,7 +25,7 @@ export default function RecentAttendance() {
         {isLoading ? (
           <Spinner />
         ) : records.length ? (
-          records.map((r) => <AttendanceRow key={r.id} record={r} />)
+          records.map((r) => <AttendanceRow key={r.id} record={r} />) 
         ) : (
           <EmptyState>No records yet — check in to get started</EmptyState>
         )}

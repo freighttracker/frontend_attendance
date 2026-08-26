@@ -32,12 +32,13 @@ export default function LoginPage() {
       return;
     }
     try {
-      const data = await login({ email, password }).unwrap();
+      const data = await login({ email: email.trim().toLowerCase(), password }).unwrap();
       dispatch(setCredentials({ user: data.user, token: data.token, refreshToken: data.refreshToken }));
       localStorage.setItem('attendance_token', data.token);
       localStorage.setItem('attendance_user', JSON.stringify(data.user));
       if (data.refreshToken) localStorage.setItem('attendance_refresh_token', data.refreshToken);
-      router.replace(data.user?.role === 'admin' ? '/admin' : '/home');
+      const adminTierRoles = ['superadmin', 'admin', 'company_admin', 'subcompany_admin'];
+      router.replace(adminTierRoles.includes(data.user?.role) ? '/admin' : '/home');
     } catch (err) {
       setError(err?.data?.message || 'Invalid email or password.');
     }

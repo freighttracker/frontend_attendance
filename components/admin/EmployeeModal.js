@@ -2,10 +2,12 @@
 
 import { useRef, useState } from 'react';
 import { useCreateEmployeeMutation, useUpdateEmployeeMutation } from '@/lib/services/usersApi';
-import { useToast, extractErrorMessage } from '@/lib/hooks';
+import { useToast, extractErrorMessage, useAppSelector } from '@/lib/hooks';
+import { selectIsSuperAdmin } from '@/lib/features/authSlice';
 import { normalizeUser } from '@/lib/utils/normalize';
 import Modal from '../ui/Modal';
 import DynamicSalaryFields from './DynamicSalaryFields';
+import CompanyHierarchySelector from './CompanyHierarchySelector';
 
 const emptyForm = {
   firstName: '',
@@ -40,12 +42,24 @@ function formFromEmployee(employee) {
 
 function EmployeeForm({ onClose, employee, onCreated }) {
   const isEdit = Boolean(employee);
+  // Only a superadmin can place a new employee into an arbitrary company -
+  // an admin/company_admin/subcompany_admin is forced server-side into
+  // their own company regardless of what's submitted here, so showing the
+  // picker to them would just be a dead control.
+  const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
   const [createEmployee, { isLoading: creating }] = useCreateEmployeeMutation();
   const [updateEmployee, { isLoading: updating }] = useUpdateEmployeeMutation();
   const toast = useToast();
   const [form, setForm] = useState(() => formFromEmployee(employee));
   const [error, setError] = useState('');
   const salaryFieldsRef = useRef(null);
+  // Optional - if the admin never touches this, company/subCompany stay
+  // null exactly as they always have, so orgs not using the hierarchy
+  // feature see no change at all.
+  const [hierarchy, setHierarchy] = useState({
+    companyId: employee?.company?.id || '',
+    subCompanyId: employee?.subCompany?.id || '',
+  });
 
   function set(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -89,6 +103,8 @@ function EmployeeForm({ onClose, employee, onCreated }) {
         totalSalary: salaryPayload.totalSalary,
         salaryComponents: salaryPayload.salaryComponents,
         customFields: salaryPayload.customFields,
+        company: hierarchy.companyId || undefined,
+        subCompany: hierarchy.subCompanyId || undefined,
       };
       if (isEdit) {
         delete payload.password;
@@ -155,12 +171,23 @@ function EmployeeForm({ onClose, employee, onCreated }) {
           <input className="fi" type="date" value={form.joiningDate} onChange={set('joiningDate')} />
         </div>
       </div>
+      {isSuperAdmin ? (
+        <div className="ff">
+          <label className="fl">Company / Subcompany</label>
+          <CompanyHierarchySelector value={hierarchy} onChange={setHierarchy} allowAll={false} />
+        </div>
+      ) : null}
+
       <div className="frow">
         <div className="ff">
           <label className="fl">Role</label>
           <select className="fi" value={form.role} onChange={set('role')}>
             <option value="employee">Employee</option>
+            <option value="manager">Manager</option>
+            <option value="subcompany_admin">Subcompany Admin</option>
+            <option value="company_admin">Company Admin</option>
             <option value="admin">Admin</option>
+            <option value="superadmin">Super Admin</option>
           </select>
         </div>
         <div className="ff">

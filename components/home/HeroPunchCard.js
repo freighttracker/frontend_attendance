@@ -8,9 +8,11 @@ import { fmtTime, fmtDurationMs, DAY_NAMES, MONTH_NAMES, pad } from '@/lib/utils
 import Modal from '../ui/Modal';
 
 export default function HeroPunchCard() {
+
   const { data, isLoading } = useGetTodayAttendanceQuery();
   const [checkIn, { isLoading: checkingIn }] = useCheckInMutation();
   const [checkOut, { isLoading: checkingOut }] = useCheckOutMutation();
+  
   const toast = useToast();
   const [now, setNow] = useState(null);
   const [error, setError] = useState('');
@@ -26,7 +28,7 @@ export default function HeroPunchCard() {
   const isCheckedIn = Boolean(record?.checkIn) && !record?.checkOut;
   const isComplete = Boolean(record?.checkIn) && Boolean(record?.checkOut);
 
-  let workedMs = 0;
+  let workedMs = 0; 
   if (isCheckedIn && record.checkIn && now) {
     workedMs = now.getTime() - new Date(record.checkIn).getTime();
   } else if (isComplete && record.checkIn && record.checkOut) {

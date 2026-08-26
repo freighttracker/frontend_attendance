@@ -9,12 +9,14 @@ import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 
 export default function RecentAttendance() {
+
   const { data, isLoading } = useGetAttendanceHistoryQuery({ page: 1, limit: 6 });
   const { items } = unwrapList(data);
   const records = items.map(normalizeAttendanceRecord);
 
   return (
     <>
+    
       <div className="sec-h">
         <span className="sec-t">Recent attendance</span>
         <Link href="/history" className="sec-a">
@@ -30,6 +32,7 @@ export default function RecentAttendance() {
           <EmptyState>No records yet — check in to get started</EmptyState>
         )}
       </div>
+
     </>
   );
 }

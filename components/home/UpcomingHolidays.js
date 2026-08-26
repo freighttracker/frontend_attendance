@@ -8,16 +8,20 @@ import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 
 function daysUntil(dateStr) {
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   return Math.round((new Date(`${dateStr}T00:00:00`) - today) / 86400000);
+  
 }
 
 export default function UpcomingHolidays() {
+
   const year = new Date().getFullYear();
   const { data, isLoading } = useGetHolidaysQuery({ year, isActive: true });
   const { items } = unwrapList(data);
   const today = todayISO();
+  
   const upcoming = items
     .map(normalizeHoliday)
     .filter((h) => h.date >= today)
@@ -34,9 +38,11 @@ export default function UpcomingHolidays() {
           <Spinner />
         ) : upcoming.length ? (
           upcoming.map((h) => {
+
             const { mo, dd } = fmtDayMonth(h.date);
             const dl = daysUntil(h.date);
             const dayName = DAY_NAMES[new Date(`${h.date}T00:00:00`).getDay()];
+            
             return (
               <div className="hrow" key={h.id}>
                 <div className="hdate">

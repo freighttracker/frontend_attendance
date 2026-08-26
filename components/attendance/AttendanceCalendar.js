@@ -13,21 +13,23 @@ import { CheckIcon, XIcon, ClockIcon, CalendarIcon } from '../icons';
 // own data and owns its own month/year navigation, so it drops into either
 // the employee's own history page or an admin employee picker unchanged.
 export default function AttendanceCalendar({ userId, employeeLabel }) {
+
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
-
   const { data, isLoading } = useGetAttendanceCalendarQuery({ userId, month, year }, { skip: !userId });
 
+  
   function shiftMonth(delta) {
+
     let m = month + delta;
     let y = year;
     if (m < 1) { m = 12; y -= 1; }
     if (m > 12) { m = 1; y += 1; }
     setMonth(m);
     setYear(y);
-  }
 
+  }
   if (!userId) return <EmptyState>Select an employee to view their attendance calendar</EmptyState>;
 
   return (
@@ -44,7 +46,6 @@ export default function AttendanceCalendar({ userId, employeeLabel }) {
           Next ›
         </button>
       </div>
-
       {isLoading ? (
         <Spinner />
       ) : data ? (
@@ -62,4 +63,5 @@ export default function AttendanceCalendar({ userId, employeeLabel }) {
       )}
     </div>
   );
+
 }

@@ -5,15 +5,18 @@ import { useGetUsersQuery } from '@/lib/services/usersApi';
 import { useGetSalaryStructuresQuery, useGeneratePayrollMutation } from '@/lib/services/payrollApi';
 import { normalizeUser, normalizeSalaryStructure } from '@/lib/utils/normalize';
 import { unwrapList } from '@/lib/utils/queryParams';
-import { useToast, extractErrorMessage } from '@/lib/hooks';
+import { useToast, extractErrorMessage, useAppSelector } from '@/lib/hooks';
+import { selectIsSuperAdmin } from '@/lib/features/authSlice';
 import SalaryStructureRow from './SalaryStructureRow';
 import SalaryStructureModal from './SalaryStructureModal';
 import SalaryStructureViewModal from './SalaryStructureViewModal';
 import SalaryHistoryModal from './SalaryHistoryModal';
+import CompanyHierarchySelector from '../admin/CompanyHierarchySelector';
 import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 
 export default function SalaryStructureTab() {
+  const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
   const now = new Date();
   const [search, setSearch] = useState('');
   const [department, setDepartment] = useState('');
@@ -21,14 +24,18 @@ export default function SalaryStructureTab() {
   const [status, setStatus] = useState('');
   const [minSalary, setMinSalary] = useState('');
   const [maxSalary, setMaxSalary] = useState('');
+  const [scope, setScope] = useState({ companyId: '', subCompanyId: '' });
 
   const [viewTarget, setViewTarget] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
   const [historyTarget, setHistoryTarget] = useState(null);
   const [generatingId, setGeneratingId] = useState(null);
 
-  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee' });
-  const { data: structuresData, isLoading: structuresLoading } = useGetSalaryStructuresQuery({});
+  const scopeParams = isSuperAdmin
+    ? { companyId: scope.companyId || undefined, subCompanyId: scope.subCompanyId || undefined }
+    : {};
+  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee', ...scopeParams });
+  const { data: structuresData, isLoading: structuresLoading } = useGetSalaryStructuresQuery(scopeParams);
   const [generatePayroll] = useGeneratePayrollMutation();
   const toast = useToast();
 
@@ -74,6 +81,7 @@ export default function SalaryStructureTab() {
   return (
     <div className="fade-in">
       <div className="filters-bar">
+        {isSuperAdmin ? <CompanyHierarchySelector value={scope} onChange={setScope} /> : null}
         <input className="fi" style={{ flex: 1, minWidth: 160 }} placeholder="Search employee or code…" value={search} onChange={(e) => setSearch(e.target.value)} />
         <select className="fi" value={department} onChange={(e) => setDepartment(e.target.value)}>
           <option value="">All departments</option>

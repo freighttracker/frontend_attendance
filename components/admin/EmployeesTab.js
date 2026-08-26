@@ -5,7 +5,8 @@ import { useGetUsersQuery, useDeleteEmployeeMutation } from '@/lib/services/user
 import { useGetSalaryStructureQuery } from '@/lib/services/payrollApi';
 import { normalizeUser, normalizeSalaryStructure } from '@/lib/utils/normalize';
 import { unwrapList } from '@/lib/utils/queryParams';
-import { useToast, extractErrorMessage } from '@/lib/hooks';
+import { useToast, extractErrorMessage, useAppSelector } from '@/lib/hooks';
+import { selectIsSuperAdmin } from '@/lib/features/authSlice';
 import EmployeeRow from './EmployeeRow';
 import EmployeeModal from './EmployeeModal';
 import BulkSalaryModal from './BulkSalaryModal';
@@ -14,6 +15,7 @@ import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 import Modal from '../ui/Modal';
 import SalaryStructureModal from '../payroll/SalaryStructureModal';
+import CompanyHierarchySelector from './CompanyHierarchySelector';
 
 // After an employee is created, skip the extra "go configure their salary"
 // step admins used to have to remember - jump straight into the Salary
@@ -37,7 +39,17 @@ function NewEmployeeSalarySetup({ employee, onClose }) {
 }
 
 export default function EmployeesTab() {
-  const { data, isLoading } = useGetUsersQuery({ page: 1, limit: 200 });
+  // Only a true superadmin can browse across companies - everyone else
+  // (admin/company_admin/subcompany_admin) is pinned server-side to their
+  // own company, so the picker would be misleading noise for them.
+  const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
+  const [scope, setScope] = useState({ companyId: '', subCompanyId: '' });
+  const { data, isLoading } = useGetUsersQuery({
+    page: 1,
+    limit: 200,
+    companyId: isSuperAdmin ? scope.companyId || undefined : undefined,
+    subCompanyId: isSuperAdmin ? scope.subCompanyId || undefined : undefined,
+  });
   const [deleteEmployee, { isLoading: deleting }] = useDeleteEmployeeMutation();
   const toast = useToast();
 
@@ -64,6 +76,11 @@ export default function EmployeesTab() {
 
   return (
     <div>
+      {isSuperAdmin ? (
+        <div className="filters-bar">
+          <CompanyHierarchySelector value={scope} onChange={setScope} />
+        </div>
+      ) : null}
       <div style={{ display: 'flex', gap: 7, marginBottom: 11, flexWrap: 'wrap' }}>
         <button
           className="btn btn-p btn-sm"

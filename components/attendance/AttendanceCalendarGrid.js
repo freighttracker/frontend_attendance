@@ -7,6 +7,7 @@ const DAY_HEAD = DAY_NAMES.map((d) => d.slice(0, 3));
 // GET /attendance/calendar/:id), lays them out as an actual calendar month
 // rather than a chronological list.
 export default function AttendanceCalendarGrid({ days, month, year, todayISO }) {
+
   if (!days?.length) return null;
 
   const leadingBlanks = new Date(year, month - 1, 1).getDay();
@@ -21,17 +22,23 @@ export default function AttendanceCalendarGrid({ days, month, year, todayISO }) 
       ))}
       {days.map((d) => {
         const flags = [
+          
           d.isEarlyCheckin ? `Early in ${d.earlyCheckinMinutes}m` : '',
           d.isLate ? `Late ${d.lateMinutes}m` : '',
           d.isEarlyLeave ? `Early out ${d.earlyLeaveMinutes}m` : '',
           d.isOvertime ? `OT ${d.overtimeHours}h` : '',
+
         ].filter(Boolean).join(' · ');
         const subLabel = d.holidayName || d.leaveType?.name || '';
+        // A past day with check-in but no check-out counts as a half day.
+        const missedCheckout = d.checkIn && !d.checkOut && todayISO && d.date < todayISO
+          && ['present', 'wfh'].includes(d.status) && !d.isStatusOverridden;
+        const status = missedCheckout ? 'half_day' : d.status;
 
         return (
           <div className={`cal-cell ${d.date === todayISO ? 'is-today' : ''}`} key={d.date}>
             <div className="cal-daynum">{d.day}</div>
-            <AttendanceStatusPill status={d.status} />
+            <AttendanceStatusPill status={status} />
             {subLabel ? <div className="cal-times">{subLabel}</div> : null}
             {d.checkIn ? (
               <div className="cal-times">

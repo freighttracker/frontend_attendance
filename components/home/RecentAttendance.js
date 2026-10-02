@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useGetAttendanceHistoryQuery } from '@/lib/services/attendanceApi';
 import { normalizeAttendanceRecord } from '@/lib/utils/normalize';
-import { unwrapList } from '@/lib/utils/queryParams';
+import { unwrapList } from '@/lib/utils/queryPa rams';
 import AttendanceRow from '../attendance/AttendanceRow';
 import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
@@ -36,3 +36,5 @@ export default function RecentAttendance() {
     </>
   );
 }
+
+

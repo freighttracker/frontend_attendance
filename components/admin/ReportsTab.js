@@ -5,10 +5,12 @@ import {
   useLazyGetAttendanceReportQuery,
   useLazyGetLeaveReportQuery,
   useLazyGetSalaryReportQuery,
-  useLazyGetMonthlySummaryQuery,
   useLazyGetLateComersReportQuery,
 } from '@/lib/services/reportsApi';
 import { pad } from '@/lib/utils/format';
+import { extractErrorMessage } from '@/lib/hooks';
+import { useLazyGetMonthlyAttendanceReportQuery } from '@/lib/services/attendanceApi';
+import MonthlySummaryReport from './MonthlySummaryReport';
 import DynamicResult from '../ui/DynamicResult';
 import Spinner from '../ui/Spinner';
 
@@ -31,7 +33,7 @@ export default function ReportsTab() {
   const [triggerAttendance, attendanceState] = useLazyGetAttendanceReportQuery();
   const [triggerLeaves, leavesState] = useLazyGetLeaveReportQuery();
   const [triggerSalary, salaryState] = useLazyGetSalaryReportQuery();
-  const [triggerMonthly, monthlyState] = useLazyGetMonthlySummaryQuery();
+  const [triggerMonthly, monthlyState] = useLazyGetMonthlyAttendanceReportQuery();
   const [triggerLateComers, lateComersState] = useLazyGetLateComersReportQuery();
 
   const config = REPORT_TYPES.find((r) => r.key === reportKey);
@@ -48,7 +50,7 @@ export default function ReportsTab() {
     const [y, m] = month.split('-').map(Number);
     if (reportKey === 'attendance') triggerAttendance({ startDate, endDate });
     if (reportKey === 'lateComers') triggerLateComers({ startDate, endDate });
-    if (reportKey === 'monthlySummary') triggerMonthly({ month: m, year: y });
+    if (reportKey === 'monthlySummary') triggerMonthly({ month: m, year: y, page: 1, limit: 1000 });
     if (reportKey === 'salary') triggerSalary({ month: m, year: y });
     if (reportKey === 'leaves') triggerLeaves({ year: Number(year) });
   }
@@ -90,7 +92,17 @@ export default function ReportsTab() {
           Generate
         </button>
       </div>
-      <div>{activeState.isFetching ? <Spinner /> : <DynamicResult data={activeState.data} />}</div>
+      <div>
+        {activeState.isFetching ? (
+          <Spinner />
+        ) : activeState.isError ? (
+          <div className="ferr">{extractErrorMessage(activeState.error, 'Could not load report.')}</div>
+        ) : reportKey === 'monthlySummary' && activeState.data ? (
+          <MonthlySummaryReport data={activeState.data} month={activeState.data.month} year={activeState.data.year} />
+        ) : (
+          <DynamicResult data={activeState.data} />
+        )}
+      </div>
     </div>
   );
 }

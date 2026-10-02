@@ -13,6 +13,8 @@ import ReimbursementsTab from '@/components/payroll/ReimbursementsTab';
 import LoansTab from '@/components/payroll/LoansTab';
 import PayrollReportsTab from '@/components/payroll/PayrollReportsTab';
 import PayrollSettingsTab from '@/components/payroll/PayrollSettingsTab';
+import SalaryReportTab from '@/components/payroll/SalaryReportTab';
+import MonthlySummaryTab from '@/components/payroll/MonthlySummaryTab';
 
 const TABS = [
   { key: 'dashboard', label: 'Dashboard' },
@@ -22,6 +24,8 @@ const TABS = [
   { key: 'bonuses', label: 'Bonuses' },
   { key: 'reimbursements', label: 'Reimbursements' },
   { key: 'loans', label: 'Loans' },
+  { key: 'salaryReport', label: 'Salary Report' },
+  { key: 'monthlySummary', label: 'Monthly Summary' },
   { key: 'reports', label: 'Reports' },
   { key: 'settings', label: 'Settings' },
 ];
@@ -47,6 +51,8 @@ export default function PayrollPage() {
       {active === 'bonuses' ? <BonusesTab /> : null}
       {active === 'reimbursements' ? <ReimbursementsTab /> : null}
       {active === 'loans' ? <LoansTab /> : null}
+      {active === 'salaryReport' ? <SalaryReportTab /> : null}
+      {active === 'monthlySummary' ? <MonthlySummaryTab /> : null}
       {active === 'reports' ? <PayrollReportsTab /> : null}
       {active === 'settings' ? <PayrollSettingsTab /> : null}
     </>

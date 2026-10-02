@@ -9,19 +9,24 @@ import Modal from '../ui/Modal';
 
 export default function HeroPunchCard() {
 
-  const { data, isLoading } = useGetTodayAttendanceQuery();
+  const {data, isLoading } = useGetTodayAttendanceQuery();
   const [checkIn, { isLoading: checkingIn }] = useCheckInMutation();
   const [checkOut, { isLoading: checkingOut }] = useCheckOutMutation();
-  
+
   const toast = useToast();
   const [now, setNow] = useState(null);
   const [error, setError] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
-    setNow(new Date());
-    const timer = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(timer);
+
+    return newFunction();
+    function newFunction() {
+      setNow(new Date());
+      const timer = setInterval(() => setNow(new Date()), 1000);
+      return () => clearInterval(timer);
+    }
+    
   }, []);
 
   const record = normalizeAttendanceRecord(data?.attendance || data?.record || data);
@@ -59,7 +64,7 @@ export default function HeroPunchCard() {
 
   const pillClass = isCheckedIn ? 'hero-pill in-pill' : 'hero-pill off';
   const statusText = isCheckedIn ? 'Checked in' : isComplete ? 'Shift complete' : 'Not checked in';
-
+  
   return (
     <div className="hero">
       <div className="hero-date">

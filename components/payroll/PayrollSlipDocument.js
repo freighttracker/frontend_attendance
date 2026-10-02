@@ -6,10 +6,24 @@ function componentAmount(component, gross) {
   return component.calcType === 'percentage' ? (value / 100) * gross : value;
 }
 
+// A generated slip carries its own calculated line items (including LOP /
+// half-day deductions) - show those as fixed amounts so the document always
+// matches the slip's net salary, rather than re-deriving them from whatever
+// the salary structure looks like today.
+function slipLines(lines) {
+  return (lines || [])
+    .filter((l) => l.amount)
+    .map((l) => ({ id: l.key || l.name, name: l.name, calcType: 'fixed', value: l.amount }));
+}
+
 export default function PayrollSlipDocument({ slip, employee, structure, companyName = 'AttendanceHR' }) {
-  const gross = structure?.grossSalary ?? slip.baseSalary ?? 0;
-  const earnings = structure?.earnings?.length ? structure.earnings : [{ id: 'base', name: 'Basic salary', calcType: 'fixed', value: slip.baseSalary }];
-  const deductions = (structure?.deductions || []).filter((d) => d.enabled !== false);
+  const raw = slip.raw || {};
+  const hasSlipLines = Array.isArray(raw.earnings) && raw.earnings.length > 0;
+  const gross = hasSlipLines ? raw.grossSalary ?? 0 : structure?.grossSalary ?? slip.baseSalary ?? 0;
+  const earnings = hasSlipLines
+    ? slipLines(raw.earnings)
+    : structure?.earnings?.length ? structure.earnings : [{ id: 'base', name: 'Basic salary', calcType: 'fixed', value: slip.baseSalary }];
+  const deductions = hasSlipLines ? slipLines(raw.deductions) : (structure?.deductions || []).filter((d) => d.enabled !== false);
   const totalEarnings = earnings.reduce((sum, c) => sum + componentAmount(c, gross), 0);
   const totalDeductions = deductions.length ? deductions.reduce((sum, c) => sum + componentAmount(c, gross), 0) : slip.deductions || 0;
 

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useSaveSalaryStructureMutation, useGetPayrollSettingsQuery } from '@/lib/services/payrollApi';
 import { useToast, extractErrorMessage } from '@/lib/hooks';
-import { fmtCurrency, fmtDate } from '@/lib/utils/format';
+import { fmtCurrency, fmtDate, pad } from '@/lib/utils/format';
 import Modal from '../ui/Modal';
 import { PlusIcon, TrashIcon, TrendUpIcon } from '../icons';
 import { SALARY_COMPONENT_MASTER } from './PayrollSettingsTab';
@@ -51,6 +51,15 @@ let uid = 0;
 function nextId() {
   uid += 1;
   return `new-${Date.now()}-${uid}`;
+}
+
+// Payroll is usually run for the month that just ended, so a change made
+// today is normally meant to apply to last month's salary as well.
+function defaultEffectiveMonth() {
+  const d = new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth() - 1);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
 }
 
 function componentAmount(component, gross) {
@@ -227,6 +236,7 @@ function SalaryStructureForm({ onClose, employee, structure }) {
   const [customEarnings, setCustomEarnings] = useState(() => seedCustomComponents(rawEarnings, 'otherAllowances'));
   const [deductions, setDeductions] = useState(() => seedFixedComponents(DEDUCTION_COMPONENTS, rawDeductions));
   const [customDeductions, setCustomDeductions] = useState(() => seedCustomComponents(rawDeductions, 'otherDeductions'));
+  const [effectiveMonth, setEffectiveMonth] = useState(defaultEffectiveMonth);
   const [error, setError] = useState('');
 
   function handleAutoFill() {
@@ -273,6 +283,10 @@ function SalaryStructureForm({ onClose, employee, structure }) {
       setError('Annual CTC must be greater than zero.');
       return;
     }
+    if (!effectiveMonth) {
+      setError('Choose the month this structure applies from.');
+      return;
+    }
     const basic = earnings.find((c) => c.type === 'basicSalary');
     if (basic?.enabled === false || !Number(basic?.value)) {
       setError('Basic Salary is required and cannot be disabled.');
@@ -288,6 +302,7 @@ function SalaryStructureForm({ onClose, employee, structure }) {
         userId: employee.id,
         monthlyGrossSalary: Number(grossSalary),
         annualCTC: Number(annualCTC),
+        effectiveFrom: `${effectiveMonth}-01`,
         earnings: toComponentMap(earnings, customEarnings, 'otherAllowances'),
         deductions: toComponentMap(deductions, customDeductions, 'otherDeductions'),
       }).unwrap();
@@ -317,6 +332,11 @@ function SalaryStructureForm({ onClose, employee, structure }) {
             <label className="fl">Annual CTC (₹)</label>
             <input type="number" min="0" className="fi" value={annualCTC} onChange={(e) => setAnnualCTC(e.target.value)} />
           </div>
+        </div>
+        <div className="ff">
+          <label className="fl">Effective from (month)</label>
+          <input type="month" className="fi" value={effectiveMonth} onChange={(e) => setEffectiveMonth(e.target.value)} />
+          <div className="dsf-hint">Payroll for this month onward uses this structure. Regenerate slips already generated for those months.</div>
         </div>
         <div className="ff">
           <button

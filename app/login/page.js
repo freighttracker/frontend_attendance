@@ -8,6 +8,7 @@ import { useLoginMutation } from '@/lib/services/authApi';
 import { useEffect } from 'react';
 
 export default function LoginPage() {
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -31,7 +32,9 @@ export default function LoginPage() {
       setError('Fill in all fields.');
       return;
     }
+
     try {
+
       const data = await login({ email: email.trim().toLowerCase(), password }).unwrap();
       dispatch(setCredentials({ user: data.user, token: data.token, refreshToken: data.refreshToken }));
       localStorage.setItem('attendance_token', data.token);

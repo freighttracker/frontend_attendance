@@ -67,15 +67,15 @@ export default function AdminPage() {
         <p>Manage team, attendance &amp; payroll</p>
       </div>
       <AdminTabs tabs={TABS} active={active} onChange={setActive} pendingCount={pendingCount} />
-
+      
       {active === 'employees' ? <EmployeesTab /> : null}
       {active === 'leave' ? <LeaveTab /> : null}
       {active === 'salary' ? <SalaryTab /> : null}
-      {active === 'salaryFields' ? <SalaryFieldsTab /> : null}
       {active === 'corrections' ? <CorrectionsTab /> : null}
+      {active === 'attendanceCalendar' ? <AttendanceCalendarTab /> : null}
+      {active === 'salaryFields' ? <SalaryFieldsTab /> : null}
       {active === 'holidays' ? <HolidaysTab /> : null}
       {active === 'attendanceReport' ? <AttendanceReportTab /> : null}
-      {active === 'attendanceCalendar' ? <AttendanceCalendarTab /> : null}
       {active === 'reports' ? <ReportsTab /> : null}
       {active === 'settings' ? <SettingsTab /> : null}
     </>

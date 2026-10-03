@@ -18,18 +18,18 @@ import AttendanceCalendarTab from '@/components/admin/AttendanceCalendarTab';
 import CompanyManagementTab from '@/components/admin/CompanyManagementTab';
 import SettingsTab from '@/components/admin/SettingsTab';
 
+
 const TABS = [
   { key: 'employees', label: 'Employees' },
   { key: 'leave', label: 'Leave' },
-  { key: 'salary', label: 'Salary' },
-  { key: 'salaryFields', label: 'Salary Fields' },
   { key: 'corrections', label: 'Correct' },
-  { key: 'holidays', label: 'Holidays' },
-  { key: 'attendanceReport', label: 'Attendance Report' },
   { key: 'attendanceCalendar', label: 'Calendar' },
   { key: 'reports', label: 'Reports' },
+  { key: 'attendanceReport', label: 'Attendance Report' },
+  { key: 'holidays', label: 'Holidays' },
   { key: 'settings', label: 'Settings' },
 ];
+
 
 // A platform Super Admin's entire job is creating/managing companies - they
 // don't touch any single company's day-to-day HR data. They get a

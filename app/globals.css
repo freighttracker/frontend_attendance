@@ -464,6 +464,17 @@ textarea.fi { resize: vertical; min-height: 68px; }
 .cal-cell .apill { font-size: 8px; padding: 2px 6px; margin-top: 3px; display: inline-block; }
 .cal-times { font-size: 8px; color: var(--g400); margin-top: 3px; line-height: 1.35; }
 .cal-flags { font-size: 8px; color: var(--amb); margin-top: 1px; line-height: 1.35; }
+.cal-cell.is-clickable { cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.cal-cell.is-clickable:hover, .cal-cell.is-clickable:focus-visible { border-color: var(--ind); box-shadow: 0 0 0 2px var(--ind-l); outline: none; }
+.cal-cell .cal-tag { font-size: 7px; padding: 1px 5px; margin-top: 3px; margin-left: 2px; }
+.cal-cell.is-pending { border-color: var(--amb); background: var(--amb-l); }
+.cal-req { font-size: 8px; font-weight: 700; color: var(--amb); margin-top: 3px; line-height: 1.35; }
+.req-strip { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.req-item { display: flex; align-items: center; gap: 8px; border: 1px solid var(--amb); background: var(--amb-l); border-radius: 9px; padding: 8px 10px; }
+.req-item .cinfo { flex: 1; min-width: 0; }
+.view-toggle { display: inline-flex; background: var(--g100); border-radius: 9px; padding: 3px; gap: 2px; }
+.view-toggle button { border: none; background: transparent; font-size: 11px; font-weight: 700; color: var(--g600); padding: 6px 12px; border-radius: 7px; cursor: pointer; }
+.view-toggle button.active { background: var(--white); color: var(--ind-d); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
 @media (min-width: 640px) { .cal-cell { min-height: 84px; padding: 7px; } .cal-daynum { font-size: 12px; } .cal-cell .apill { font-size: 9px; } .cal-times, .cal-flags { font-size: 9px; } }
 
 /* Floating action button */

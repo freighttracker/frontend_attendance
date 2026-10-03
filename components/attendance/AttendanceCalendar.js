@@ -12,14 +12,13 @@ import { CheckIcon, XIcon, ClockIcon, CalendarIcon } from '../icons';
 // Self-contained month calendar for one employee's attendance - fetches its
 // own data and owns its own month/year navigation, so it drops into either
 // the employee's own history page or an admin employee picker unchanged.
-export default function AttendanceCalendar({ userId, employeeLabel }) {
+export default function AttendanceCalendar({ userId, employeeLabel, onDayClick }) {
 
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
   const { data, isLoading } = useGetAttendanceCalendarQuery({ userId, month, year }, { skip: !userId });
 
-  
   function shiftMonth(delta) {
 
     let m = month + delta;
@@ -28,8 +27,8 @@ export default function AttendanceCalendar({ userId, employeeLabel }) {
     if (m > 12) { m = 1; y += 1; }
     setMonth(m);
     setYear(y);
-
   }
+  
   if (!userId) return <EmptyState>Select an employee to view their attendance calendar</EmptyState>;
 
   return (
@@ -39,8 +38,8 @@ export default function AttendanceCalendar({ userId, employeeLabel }) {
           ‹ Prev
         </button>
         <div className="cal-nav-label">
-          {employeeLabel ? `${employeeLabel} · ` : ''}
-          {MONTH_NAMES[month - 1]} {year}
+           {employeeLabel ? `${employeeLabel} · ` : ''}
+           {MONTH_NAMES[month - 1]} {year}
         </div>
         <button className="btn btn-g btn-sm" onClick={() => shiftMonth(1)}>
           Next ›
@@ -56,7 +55,7 @@ export default function AttendanceCalendar({ userId, employeeLabel }) {
             <KpiCard icon={ClockIcon} tone="amb" label="Half Day" value={data.summary.halfDays} />
             <KpiCard icon={CalendarIcon} tone="ind" label="Working Days" value={data.summary.workingDays} />
           </div>
-          <AttendanceCalendarGrid days={data.days} month={month} year={year} todayISO={todayISO()} />
+          <AttendanceCalendarGrid days={data.days} month={month} year={year} todayISO={todayISO()} onDayClick={onDayClick} />
         </>
       ) : (
         <EmptyState>No attendance data for this period</EmptyState>

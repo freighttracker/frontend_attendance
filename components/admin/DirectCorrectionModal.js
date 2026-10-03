@@ -18,7 +18,10 @@ const STATUS_OPTIONS = [
   { value: 'on_leave', label: 'On Leave' },
 ];
 
-export default function DirectCorrectionModal({ open, onClose }) {
+// `initial` prefills the form (e.g. from a clicked calendar day) and
+// `lockTarget` pins employee + date so the admin only edits times/status.
+// Callers remount via `key` when `initial` changes.
+export default function DirectCorrectionModal({ open, onClose, initial, lockTarget = false, currentSummary }) {
   const { data: usersData } = useGetUsersQuery({ page: 1, limit: 500, role: 'employee' }, { skip: !open });
   const { items } = unwrapList(usersData);
   const employees = useMemo(() => items.map(normalizeUser), [items]);
@@ -26,20 +29,20 @@ export default function DirectCorrectionModal({ open, onClose }) {
   const [correctAttendance, { isLoading }] = useCorrectAttendanceMutation();
   const toast = useToast();
 
-  const [userId, setUserId] = useState('');
-  const [date, setDate] = useState(() => todayISO());
-  const [checkInTime, setCheckInTime] = useState('');
-  const [checkOutTime, setCheckOutTime] = useState('');
-  const [status, setStatus] = useState('');
+  const [userId, setUserId] = useState(initial?.userId || '');
+  const [date, setDate] = useState(() => initial?.date || todayISO());
+  const [checkInTime, setCheckInTime] = useState(initial?.checkInTime || '');
+  const [checkOutTime, setCheckOutTime] = useState(initial?.checkOutTime || '');
+  const [status, setStatus] = useState(initial?.status || '');
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
 
   function reset() {
-    setUserId('');
-    setDate(todayISO());
-    setCheckInTime('');
-    setCheckOutTime('');
-    setStatus('');
+    setUserId(initial?.userId || '');
+    setDate(initial?.date || todayISO());
+    setCheckInTime(initial?.checkInTime || '');
+    setCheckOutTime(initial?.checkOutTime || '');
+    setStatus(initial?.status || '');
     setReason('');
     setError('');
   }
@@ -82,7 +85,7 @@ export default function DirectCorrectionModal({ open, onClose }) {
       open={open}
       onClose={handleClose}
       title="Directly Correct Attendance"
-      subtitle="Use this when there is no correction request on file"
+      subtitle={currentSummary || 'Use this when there is no correction request on file'}
       actions={
         <>
           <button className="btn btn-g" style={{ flex: 1 }} onClick={handleClose}>
@@ -97,7 +100,7 @@ export default function DirectCorrectionModal({ open, onClose }) {
       <div className="frow">
         <div className="ff">
           <label className="fl">Employee</label>
-          <select className="fi" value={userId} onChange={(e) => setUserId(e.target.value)}>
+          <select className="fi" value={userId} disabled={lockTarget} onChange={(e) => setUserId(e.target.value)}>
             <option value="">Select employee…</option>
             {employees.map((e) => (
               <option key={e.id} value={e.id}>
@@ -108,7 +111,7 @@ export default function DirectCorrectionModal({ open, onClose }) {
         </div>
         <div className="ff">
           <label className="fl">Date</label>
-          <input className="fi" type="date" value={date} max={todayISO()} onChange={(e) => setDate(e.target.value)} />
+          <input className="fi" type="date" value={date} max={todayISO()} disabled={lockTarget} onChange={(e) => setDate(e.target.value)} />
         </div>
       </div>
       <div className="frow">

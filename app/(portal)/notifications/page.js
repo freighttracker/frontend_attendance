@@ -14,6 +14,7 @@ import Spinner from '@/components/ui/Spinner';
 import { TrashIcon } from '@/components/icons';
 
 export default function NotificationsPage() {
+  
   const { data, isLoading } = useGetNotificationsQuery({ page: 1, limit: 50 });
   const [markAllRead] = useMarkAllReadMutation();
   const [markRead] = useMarkNotificationReadMutation();

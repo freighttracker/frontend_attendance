@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 export default function AdminTabs({ tabs, active, onChange, pendingCount }) {
+  
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -14,6 +15,7 @@ export default function AdminTabs({ tabs, active, onChange, pendingCount }) {
     setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
   }
 
+  
   useEffect(() => {
     updateScrollState();
     const el = scrollRef.current;

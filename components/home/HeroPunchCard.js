@@ -51,6 +51,7 @@ export default function HeroPunchCard() {
   }
 
   async function handleConfirmCheckOut() {
+
     setError('');
     try {
       await checkOut({}).unwrap();
@@ -60,6 +61,7 @@ export default function HeroPunchCard() {
       setConfirmOpen(false);
       setError(extractErrorMessage(err, 'Could not check out.'));
     }
+    
   }
 
   const pillClass = isCheckedIn ? 'hero-pill in-pill' : 'hero-pill off';

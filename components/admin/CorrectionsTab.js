@@ -7,10 +7,29 @@ import { fmtDate, fmtTime } from '@/lib/utils/format';
 import RejectCorrectionModal from './RejectCorrectionModal';
 import ApproveCorrectionModal from './ApproveCorrectionModal';
 import DirectCorrectionModal from './DirectCorrectionModal';
+import CorrectionCalendarView from './CorrectionCalendarView';
 import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 
 export default function CorrectionsTab() {
+  const [view, setView] = useState('calendar');
+
+  return (
+    <div>
+      <div className="view-toggle" style={{ marginBottom: 11 }}>
+        <button className={view === 'calendar' ? 'active' : ''} onClick={() => setView('calendar')}>
+          Calendar
+        </button>
+        <button className={view === 'requests' ? 'active' : ''} onClick={() => setView('requests')}>
+          Requests
+        </button>
+      </div>
+      {view === 'calendar' ? <CorrectionCalendarView /> : <CorrectionRequestsList />}
+    </div>
+  );
+}
+
+function CorrectionRequestsList() {
   const [status, setStatus] = useState('pending');
   const { data, isLoading } = useGetCorrectionRequestsQuery({ status, page: 1, limit: 100 });
   const [rejectingId, setRejectingId] = useState(null);
@@ -25,7 +44,7 @@ export default function CorrectionsTab() {
       <div className="frow" style={{ marginBottom: 11, alignItems: 'center' }}>
         <div className="ff" style={{ margin: 0 }}>
           <select className="fi" style={{ fontSize: 12, padding: '9px 11px' }} value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="">All statuses</option>
+            <option value="all">All statuses</option>
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>

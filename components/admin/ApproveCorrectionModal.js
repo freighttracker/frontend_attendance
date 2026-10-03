@@ -24,7 +24,19 @@ function toTimeInputValue(value) {
   return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function ApproveCorrectionModal({ correction, onClose }) {
+// "YYYY-MM-DD" passes through; a full timestamp (e.g. IST midnight stored
+// as 18:30Z the previous day) is read in local time so the day is right.
+function toDateOnly(value) {
+  if (!value) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// `onReject`, when given, adds a Reject button (used from the Correct tab's
+// calendar, where there's no list row with its own ✗ button).
+export default function ApproveCorrectionModal({ correction, onClose, onReject }) {
   const [reviewCorrection, { isLoading }] = useReviewCorrectionMutation();
   const toast = useToast();
 
@@ -37,7 +49,7 @@ export default function ApproveCorrectionModal({ correction, onClose }) {
 
   const userName = typeof correction.user === 'object' ? `${correction.user?.firstName || ''} ${correction.user?.lastName || ''}`.trim() : 'Employee';
   const record = correction.attendanceRecord;
-  const dateOnly = correction.date ? String(correction.date).slice(0, 10) : null;
+  const dateOnly = toDateOnly(correction.date);
 
   async function handleConfirm() {
     setError('');
@@ -73,6 +85,11 @@ export default function ApproveCorrectionModal({ correction, onClose }) {
           <button className="btn btn-g" style={{ flex: 1 }} onClick={onClose}>
             Cancel
           </button>
+          {onReject ? (
+            <button className="btn btn-r" style={{ flex: 1 }} disabled={isLoading} onClick={onReject}>
+              Reject
+            </button>
+          ) : null}
           <button className="btn btn-p" style={{ flex: 1 }} disabled={isLoading} onClick={handleConfirm}>
             {isLoading ? 'Approving…' : 'Approve'}
           </button>

@@ -11,6 +11,7 @@ import LeaveApplyModal from '@/components/leave/LeaveApplyModal';
 import RequestCorrectionModal from '@/components/attendance/RequestCorrectionModal';
 
 export default function HomePage() {
+
   const [leaveModalOpen, setLeaveModalOpen] = useState(false);
   const [correctionModalOpen, setCorrectionModalOpen] = useState(false);
 

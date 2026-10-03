@@ -10,6 +10,7 @@ import EmptyState from '../ui/EmptyState';
 // Admin view of any one employee's attendance calendar - pick an employee,
 // AttendanceCalendar handles the month navigation and data itself.
 export default function AttendanceCalendarTab() {
+  
   const { data: usersData, isLoading } = useGetUsersQuery({ page: 1, limit: 300, role: 'employee' });
   const { items } = unwrapList(usersData);
   const employees = items.map(normalizeUser);

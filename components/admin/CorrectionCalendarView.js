@@ -9,7 +9,6 @@ import { fmtDate, fmtTime, pad, titleCase } from '@/lib/utils/format';
 import AttendanceCalendar from '@/components/attendance/AttendanceCalendar';
 import DirectCorrectionModal from './DirectCorrectionModal';
 import ApproveCorrectionModal from './ApproveCorrectionModal';
-import RejectCorrectionModal from './RejectCorrectionModal';
 import EmptyState from '../ui/EmptyState';
 
 function toTimeInputValue(value) {
@@ -17,6 +16,13 @@ function toTimeInputValue(value) {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '';
   return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// Local YYYY-MM-DD for a stored date (not toISOString, which is UTC and
+// shifts IST midnight back to the previous day).
+function toDateKey(value) {
+  const d = new Date(value);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 // Correct tab's calendar view - pick an employee, click any past/today cell
@@ -28,8 +34,11 @@ export default function CorrectionCalendarView() {
   const employees = items.map(normalizeUser);
   const [selectedId, setSelectedId] = useState('');
   const [selectedDay, setSelectedDay] = useState(null);
-  const [rejectingId, setRejectingId] = useState(null);
   const [approvingFromList, setApprovingFromList] = useState(null);
+  const [initialDecision, setInitialDecision] = useState('approved');
+  // Set when the admin chooses to override a pending request with their own
+  // direct correction - takes precedence over the approve flow.
+  const [overrideDay, setOverrideDay] = useState(null);
 
   // All pending requests, grouped per employee - drives the picker's counts
   // and the strip above the calendar (which covers every month, not just
@@ -52,7 +61,7 @@ export default function CorrectionCalendarView() {
 
   // Shape the calendar day into what ApproveCorrectionModal expects from a
   // GET /attendance/corrections row.
-  const approving = approvingFromList || (pendingRequest
+  const approving = overrideDay ? null : approvingFromList || (pendingRequest
     ? {
         _id: pendingRequest.id,
         date: selectedDay.date,
@@ -69,13 +78,31 @@ export default function CorrectionCalendarView() {
   function closeApprove() {
     setSelectedDay(null);
     setApprovingFromList(null);
+    setInitialDecision('approved');
   }
 
-  const direct = selectedDay && !pendingRequest ? selectedDay : null;
+  function startOverride() {
+    // From a calendar cell we have the day's times; from the pending strip
+    // only the date, so the form starts blank there.
+    setOverrideDay(selectedDay || { date: toDateKey(approvingFromList.date), status: 'pending' });
+    setApprovingFromList(null);
+  }
+
+  function closeDirect() {
+    setSelectedDay(null);
+    setOverrideDay(null);
+  }
+
+  const direct = overrideDay || (selectedDay && !pendingRequest ? selectedDay : null);
+  const overrideNote = overrideDay
+    ? ' · saving closes the pending request'
+    : direct?.isCorrected
+      ? ' · already corrected, saving replaces it'
+      : '';
   const currentSummary = direct
     ? `${selected?.name || 'Employee'} · ${fmtDate(direct.date)} · now ${titleCase(direct.status)}${
         direct.checkIn ? ` (${fmtTime(direct.checkIn)} – ${direct.checkOut ? fmtTime(direct.checkOut) : '—'})` : ''
-      }`
+      }${overrideNote}`
     : '';
 
   return (
@@ -112,10 +139,10 @@ export default function CorrectionCalendarView() {
                       </div>
                       <div className="ctimes">{c.reason}</div>
                     </div>
-                    <button className="btn btn-p btn-sm" onClick={() => setApprovingFromList(c)}>
+                    <button className="btn btn-p btn-sm" onClick={() => { setInitialDecision('approved'); setApprovingFromList(c); }}>
                       Approve
                     </button>
-                    <button className="btn btn-r btn-sm" onClick={() => setRejectingId(c._id)}>
+                    <button className="btn btn-r btn-sm" onClick={() => { setInitialDecision('rejected'); setApprovingFromList(c); }}>
                       Reject
                     </button>
                   </div>
@@ -123,7 +150,7 @@ export default function CorrectionCalendarView() {
               </div>
             ) : null}
             <div className="ctimes" style={{ marginBottom: 10 }}>
-              Click any day up to today to correct it. Days marked “Request pending” open the employee’s request.
+              Click any day up to today to correct it, including days you already corrected. Days marked “Request pending” open the employee’s request, where you can approve it or correct the day yourself instead.
             </div>
             <AttendanceCalendar
               userId={selectedId}
@@ -137,9 +164,9 @@ export default function CorrectionCalendarView() {
       </div>
 
       <DirectCorrectionModal
-        key={direct ? `${selectedId}-${direct.date}` : 'none'}
+        key={direct ? `${selectedId}-${direct.date}-${overrideDay ? 'override' : 'direct'}` : 'none'}
         open={Boolean(direct)}
-        onClose={() => setSelectedDay(null)}
+        onClose={closeDirect}
         lockTarget
         currentSummary={currentSummary}
         initial={
@@ -149,20 +176,20 @@ export default function CorrectionCalendarView() {
                 date: direct.date,
                 checkInTime: toTimeInputValue(direct.checkIn),
                 checkOutTime: toTimeInputValue(direct.checkOut),
+                // Keep a previously forced status visible so re-correcting
+                // starts from it rather than silently reverting to auto.
+                status: direct.isStatusOverridden ? direct.status : '',
               }
             : undefined
         }
       />
       <ApproveCorrectionModal
-        key={approving?._id || 'none'}
+        key={approving ? `${approving._id}-${initialDecision}` : 'none'}
         correction={approving}
+        initialDecision={initialDecision}
         onClose={closeApprove}
-        onReject={() => {
-          setRejectingId(approving._id);
-          closeApprove();
-        }}
+        onOverride={startOverride}
       />
-      <RejectCorrectionModal correctionId={rejectingId} onClose={() => setRejectingId(null)} />
     </div>
   );
 }

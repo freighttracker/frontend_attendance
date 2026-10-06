@@ -4,15 +4,12 @@ import { useState } from 'react';
 import { useReviewCorrectionMutation } from '@/lib/services/attendanceApi';
 import { useToast, extractErrorMessage } from '@/lib/hooks';
 import { fmtDate, fmtTime, pad } from '@/lib/utils/format';
+import { DAY_STATUS_OPTIONS } from '@/lib/utils/attendanceStatus';
 import Modal from '../ui/Modal';
 
-const OVERRIDE_STATUS_OPTIONS = [
-  { value: '', label: 'Auto-calculate from time' },
-  { value: 'present', label: 'Full Day (Present)' },
-  { value: 'half_day', label: 'Half Day' },
-  { value: 'absent', label: 'Absent' },
-  { value: 'wfh', label: 'Work From Home' },
-  { value: 'on_leave', label: 'On Leave' },
+const DECISION_OPTIONS = [
+  { value: 'approved', label: 'Approve' },
+  { value: 'rejected', label: 'Reject' },
 ];
 
 // Native <input type="time"> works in 24h "HH:mm" - convert a stored
@@ -34,15 +31,20 @@ function toDateOnly(value) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-// `onReject`, when given, adds a Reject button (used from the Correct tab's
-// calendar, where there's no list row with its own ✗ button).
-export default function ApproveCorrectionModal({ correction, onClose, onReject }) {
+// Review one correction request: a Decision dropdown picks Approve (with
+// editable times and a "count this day as" override, incl. Weekend/Holiday)
+// or Reject (with a required reason). `initialDecision` preselects it.
+// `onOverride`, when given, adds a "Correct myself" button that hands off to
+// a direct correction instead (which closes this request on save).
+export default function ApproveCorrectionModal({ correction, onClose, initialDecision = 'approved', onOverride }) {
   const [reviewCorrection, { isLoading }] = useReviewCorrectionMutation();
   const toast = useToast();
 
+  const [decision, setDecision] = useState(initialDecision);
   const [checkInTime, setCheckInTime] = useState(() => toTimeInputValue(correction?.requestedCheckIn));
   const [checkOutTime, setCheckOutTime] = useState(() => toTimeInputValue(correction?.requestedCheckOut));
   const [overrideStatus, setOverrideStatus] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
   const [error, setError] = useState('');
 
   if (!correction) return null;
@@ -50,80 +52,117 @@ export default function ApproveCorrectionModal({ correction, onClose, onReject }
   const userName = typeof correction.user === 'object' ? `${correction.user?.firstName || ''} ${correction.user?.lastName || ''}`.trim() : 'Employee';
   const record = correction.attendanceRecord;
   const dateOnly = toDateOnly(correction.date);
+  const isReject = decision === 'rejected';
 
   async function handleConfirm() {
     setError('');
 
-    const body = { id: correction._id, status: 'approved' };
-    if (dateOnly && checkInTime && checkInTime !== toTimeInputValue(correction.requestedCheckIn)) {
-      body.requestedCheckIn = `${dateOnly}T${checkInTime}:00`;
-    }
-    if (dateOnly && checkOutTime && checkOutTime !== toTimeInputValue(correction.requestedCheckOut)) {
-      body.requestedCheckOut = `${dateOnly}T${checkOutTime}:00`;
-    }
-    if (overrideStatus) {
-      body.overrideStatus = overrideStatus;
+    let body;
+    if (isReject) {
+      if (!rejectionReason.trim()) {
+        setError('Rejection reason is required.');
+        return;
+      }
+      body = { id: correction._id, status: 'rejected', rejectionReason: rejectionReason.trim() };
+    } else {
+      body = { id: correction._id, status: 'approved' };
+      if (dateOnly && checkInTime && checkInTime !== toTimeInputValue(correction.requestedCheckIn)) {
+        body.requestedCheckIn = `${dateOnly}T${checkInTime}:00`;
+      }
+      if (dateOnly && checkOutTime && checkOutTime !== toTimeInputValue(correction.requestedCheckOut)) {
+        body.requestedCheckOut = `${dateOnly}T${checkOutTime}:00`;
+      }
+      if (overrideStatus) {
+        body.overrideStatus = overrideStatus;
+      }
     }
 
     try {
       await reviewCorrection(body).unwrap();
-      toast('Correction approved');
+      toast(isReject ? 'Correction request rejected' : 'Correction approved');
       onClose();
     } catch (err) {
-      setError(extractErrorMessage(err, 'Could not approve request.'));
+      setError(extractErrorMessage(err, isReject ? 'Could not reject request.' : 'Could not approve request.'));
     }
   }
+
+  const busyLabel = isReject ? 'Rejecting…' : 'Approving…';
 
   return (
     <Modal
       open={Boolean(correction)}
       onClose={onClose}
-      title="Approve Correction Request"
+      title="Review Correction Request"
       subtitle={`${userName || 'Employee'} · ${fmtDate(correction.date)}`}
       actions={
         <>
           <button className="btn btn-g" style={{ flex: 1 }} onClick={onClose}>
             Cancel
           </button>
-          {onReject ? (
-            <button className="btn btn-r" style={{ flex: 1 }} disabled={isLoading} onClick={onReject}>
-              Reject
+          {onOverride && !isReject ? (
+            <button className="btn btn-g" style={{ flex: 1 }} disabled={isLoading} onClick={onOverride}>
+              Correct myself
             </button>
           ) : null}
-          <button className="btn btn-p" style={{ flex: 1 }} disabled={isLoading} onClick={handleConfirm}>
-            {isLoading ? 'Approving…' : 'Approve'}
+          <button className={`btn ${isReject ? 'btn-r' : 'btn-p'}`} style={{ flex: 1 }} disabled={isLoading} onClick={handleConfirm}>
+            {isLoading ? busyLabel : isReject ? 'Reject' : 'Approve'}
           </button>
         </>
       }
     >
-      <div className="ff">
-        <label className="fl">Current</label>
-        <div className="ctimes" style={{ marginBottom: 8 }}>
-          {record ? `${fmtTime(record.checkIn?.time)} — ${fmtTime(record.checkOut?.time)}` : 'No attendance record yet'}
-        </div>
-      </div>
       <div className="frow">
         <div className="ff">
-          <label className="fl">Check-in (edit if wrong)</label>
-          <input className="fi" type="time" value={checkInTime} onChange={(e) => setCheckInTime(e.target.value)} />
+          <label className="fl">Current</label>
+          <div className="ctimes">
+            {record ? `${fmtTime(record.checkIn?.time)} — ${fmtTime(record.checkOut?.time)}` : 'No attendance record yet'}
+          </div>
         </div>
         <div className="ff">
-          <label className="fl">Check-out (edit if wrong)</label>
-          <input className="fi" type="time" value={checkOutTime} onChange={(e) => setCheckOutTime(e.target.value)} />
+          <label className="fl">Requested</label>
+          <div className="ctimes">
+            {correction.requestedCheckIn ? fmtTime(correction.requestedCheckIn) : '—'} — {correction.requestedCheckOut ? fmtTime(correction.requestedCheckOut) : '—'}
+          </div>
         </div>
       </div>
       <div className="ff">
-        <label className="fl">Count this day as</label>
-        <select className="fi" value={overrideStatus} onChange={(e) => setOverrideStatus(e.target.value)}>
-          {OVERRIDE_STATUS_OPTIONS.map((o) => (
+        <label className="fl">Employee&apos;s reason</label>
+        <div className="ctimes">{correction.reason}</div>
+      </div>
+      <div className="ff">
+        <label className="fl">Decision</label>
+        <select className="fi" value={decision} onChange={(e) => { setDecision(e.target.value); setError(''); }}>
+          {DECISION_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
       </div>
-      <div className="ff">
-        <label className="fl">Reason</label>
-        <div className="ctimes">{correction.reason}</div>
-      </div>
+      {isReject ? (
+        <div className="ff">
+          <label className="fl">Rejection reason</label>
+          <textarea className="fi" rows={2} value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} />
+        </div>
+      ) : (
+        <>
+          <div className="frow">
+            <div className="ff">
+              <label className="fl">Check-in (edit if wrong)</label>
+              <input className="fi" type="time" value={checkInTime} onChange={(e) => setCheckInTime(e.target.value)} />
+            </div>
+            <div className="ff">
+              <label className="fl">Check-out (edit if wrong)</label>
+              <input className="fi" type="time" value={checkOutTime} onChange={(e) => setCheckOutTime(e.target.value)} />
+            </div>
+          </div>
+          <div className="ff">
+            <label className="fl">Count this day as</label>
+            <select className="fi" value={overrideStatus} onChange={(e) => setOverrideStatus(e.target.value)}>
+              {DAY_STATUS_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+        </>
+      )}
       <div className="ferr">{error}</div>
     </Modal>
   );

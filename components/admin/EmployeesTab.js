@@ -50,6 +50,7 @@ export default function EmployeesTab() {
     companyId: isSuperAdmin ? scope.companyId || undefined : undefined,
     subCompanyId: isSuperAdmin ? scope.subCompanyId || undefined : undefined,
   });
+  
   const [deleteEmployee, { isLoading: deleting }] = useDeleteEmployeeMutation();
   const toast = useToast();
 

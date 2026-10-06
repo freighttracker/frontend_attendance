@@ -7,16 +7,8 @@ import { useToast, extractErrorMessage } from '@/lib/hooks';
 import { normalizeUser } from '@/lib/utils/normalize';
 import { unwrapList } from '@/lib/utils/queryParams';
 import { todayISO } from '@/lib/utils/format';
+import { DAY_STATUS_OPTIONS as STATUS_OPTIONS } from '@/lib/utils/attendanceStatus';
 import Modal from '../ui/Modal';
-
-const STATUS_OPTIONS = [
-  { value: '', label: 'Auto-calculate from time' },
-  { value: 'present', label: 'Full Day (Present)' },
-  { value: 'half_day', label: 'Half Day' },
-  { value: 'absent', label: 'Absent' },
-  { value: 'wfh', label: 'Work From Home' },
-  { value: 'on_leave', label: 'On Leave' },
-];
 
 // `initial` prefills the form (e.g. from a clicked calendar day) and
 // `lockTarget` pins employee + date so the admin only edits times/status.

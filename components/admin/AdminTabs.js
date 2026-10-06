@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useRef, useState } from 'react';
 
 export default function AdminTabs({ tabs, active, onChange, pendingCount }) {
@@ -9,14 +8,16 @@ export default function AdminTabs({ tabs, active, onChange, pendingCount }) {
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   function updateScrollState() {
+
     const el = scrollRef.current;
     if (!el) return;
     setCanScrollLeft(el.scrollLeft > 4);
     setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    
   }
 
-  
   useEffect(() => {
+
     updateScrollState();
     const el = scrollRef.current;
     if (!el) return undefined;
@@ -26,6 +27,7 @@ export default function AdminTabs({ tabs, active, onChange, pendingCount }) {
       el.removeEventListener('scroll', updateScrollState);
       window.removeEventListener('resize', updateScrollState);
     };
+
   }, [tabs.length]);
 
   // If the active tab changes (or a new one is added) and it's scrolled out

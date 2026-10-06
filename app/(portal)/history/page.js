@@ -16,6 +16,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Spinner from '@/components/ui/Spinner';
 
 export default function HistoryPage() {
+  
   const now = new Date();
   const [month, setMonth] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
   const [filterMonth, setFilterMonth] = useState(month);
@@ -63,7 +64,7 @@ export default function HistoryPage() {
               <input type="month" className="fi" style={{ fontSize: 12, padding: '9px 11px' }} value={month} onChange={(e) => setMonth(e.target.value)} />
             </div>
             <button className="btn btn-g btn-sm" onClick={() => setFilterMonth(month)}>
-              Filter
+               Filter
             </button>
             <button
               className="btn btn-g btn-sm"

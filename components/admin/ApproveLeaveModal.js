@@ -13,14 +13,11 @@ const PAY_OPTIONS = [
 ];
 
 export default function ApproveLeaveModal({ leave, onClose }) {
+
   const [reviewLeave, { isLoading }] = useReviewLeaveMutation();
   const toast = useToast();
 
   const [payChoice, setPayChoice] = useState('');
-  const [paidDays, setPaidDays] = useState('');
-  const [unpaidDays, setUnpaidDays] = useState('');
-  const [remarks, setRemarks] = useState('');
-  const [error, setError] = useState('');
 
   const totalDays = leave?.totalDays ?? 0;
 
@@ -41,11 +38,13 @@ export default function ApproveLeaveModal({ leave, onClose }) {
 
   const paidNum = Number(paidDays);
   const unpaidNum = Number(unpaidDays);
+
   const splitIsValid =
     payChoice !== 'partial' ||
     (paidDays !== '' && unpaidDays !== '' && Number.isFinite(paidNum) && Number.isFinite(unpaidNum) && paidNum >= 0 && unpaidNum >= 0 && paidNum + unpaidNum === totalDays);
 
   async function handleSubmit() {
+
     if (!payChoice) {
       setError('Select a leave payment type.');
       return;
@@ -56,6 +55,7 @@ export default function ApproveLeaveModal({ leave, onClose }) {
     }
 
     const body = { id: leave.id, status: 'approved', paidStatus: payChoice, remarks: remarks.trim() || undefined };
+    
     if (payChoice === 'partial') {
       body.paidDays = paidNum;
       body.unpaidDays = unpaidNum;
@@ -68,6 +68,7 @@ export default function ApproveLeaveModal({ leave, onClose }) {
     } catch (err) {
       setError(extractErrorMessage(err, 'Could not approve leave.'));
     }
+    
   }
 
   const typeName = leave && typeof leave.leaveType === 'object' ? leave.leaveType?.name : null;

@@ -10,6 +10,7 @@ import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 
 export default function LeaveTab() {
+
   const [status, setStatus] = useState('pending');
   const { data, isLoading } = useGetAllLeavesQuery({ status, page: 1, limit: 100 });
   const [rejectingId, setRejectingId] = useState(null);
@@ -17,7 +18,7 @@ export default function LeaveTab() {
 
   const { items } = unwrapList(data);
   const leaves = items.map(normalizeLeave).sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''));
-
+  
   return (
     <div>
       <div className="frow" style={{ marginBottom: 11 }}>
@@ -71,7 +72,7 @@ function LeaveRowContent({ leave, onApprove, onReject }) {
         ) : null}
         {leave.status === 'approved' && leave.paidStatus ? (
           <div className="ldays-label">
-            Paid: {leave.paidDays} · Unpaid: {leave.unpaidDays}
+            Paid: {leave?.paidDays} · Unpaid: {leave?.unpaidDays}
           </div>
         ) : null}
       </div>

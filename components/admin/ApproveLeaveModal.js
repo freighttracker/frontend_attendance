@@ -18,6 +18,10 @@ export default function ApproveLeaveModal({ leave, onClose }) {
   const toast = useToast();
 
   const [payChoice, setPayChoice] = useState('');
+  const [paidDays, setPaidDays] = useState('');
+  const [unpaidDays, setUnpaidDays] = useState('');
+  const [remarks, setRemarks] = useState('');
+  const [error, setError] = useState('');
 
   const totalDays = leave?.totalDays ?? 0;
 

@@ -22,7 +22,9 @@ import SettingsTab from '@/components/admin/SettingsTab';
 const TABS = [
   { key: 'employees', label: 'Employees' },
   { key: 'leave', label: 'Leave' },
-  { key: 'corrections', label: 'Correct' },
+  { key: 'salary', label: 'Salary' },
+  { key: 'salaryFields', label: 'Salary Fields' },
+  { key: 'corrections', label: 'Corrections' },
   { key: 'attendanceCalendar', label: 'Calendar' },
   { key: 'reports', label: 'Reports' },
   { key: 'attendanceReport', label: 'Attendance Report' },
@@ -67,17 +69,16 @@ export default function AdminPage() {
         <p>Manage team, attendance &amp; payroll</p>
       </div>
       <AdminTabs tabs={TABS} active={active} onChange={setActive} pendingCount={pendingCount} />
-      
-      {active === 'employees' ? <EmployeesTab /> : null}
-      {active === 'leave' ? <LeaveTab /> : null}
-      {active === 'salary' ? <SalaryTab /> : null}
-      {active === 'corrections' ? <CorrectionsTab /> : null}
-      {active === 'attendanceCalendar' ? <AttendanceCalendarTab /> : null}
-      {active === 'salaryFields' ? <SalaryFieldsTab /> : null}
-      {active === 'holidays' ? <HolidaysTab /> : null}
-      {active === 'attendanceReport' ? <AttendanceReportTab /> : null}
-      {active === 'reports' ? <ReportsTab /> : null}
-      {active === 'settings' ? <SettingsTab /> : null}
+        {active === 'employees' ? <EmployeesTab /> : null}
+        {active === 'leave' ? <LeaveTab /> : null}
+        {active === 'salary' ? <SalaryTab /> : null}
+        {active === 'corrections' ? <CorrectionsTab /> : null}
+        {active === 'attendanceCalendar' ? <AttendanceCalendarTab /> : null}
+        {active === 'salaryFields' ? <SalaryFieldsTab /> : null}
+        {active === 'holidays' ? <HolidaysTab /> : null}
+        {active === 'attendanceReport' ? <AttendanceReportTab /> : null}
+        {active === 'reports' ? <ReportsTab /> : null}
+        {active === 'settings' ? <SettingsTab /> : null}
     </>
   );
 }

@@ -10,7 +10,9 @@ import LeaveRow from '@/components/leave/LeaveRow';
 import EmptyState from '@/components/ui/EmptyState';
 import Spinner from '@/components/ui/Spinner';
 
+
 export default function LeavePage() {
+  
   const [modalOpen, setModalOpen] = useState(false);
   const { data, isLoading } = useGetMyLeavesQuery({ page: 1, limit: 50 });
   const [cancelLeave] = useCancelLeaveMutation();

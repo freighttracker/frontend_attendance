@@ -76,7 +76,7 @@ export default function HistoryPage() {
               Clear
             </button>
             <button className="btn btn-p btn-sm" style={{ marginLeft: 'auto' }} onClick={() => setCorrectionDate(todayISO())}>
-              Request Correction
+               Request Correction
             </button>
           </div>
           <div className="card" style={{ padding: '0 16px' }}>

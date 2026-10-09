@@ -8,6 +8,7 @@ import { todayISO } from '@/lib/utils/format';
 import Modal from '../ui/Modal';
 
 function LeaveApplyForm({ onClose }) {
+
   const { data: typesData } = useGetLeaveTypesQuery();
   const { items: leaveTypes } = unwrapList(typesData);
   const [applyLeave, { isLoading }] = useApplyLeaveMutation();
@@ -27,7 +28,9 @@ function LeaveApplyForm({ onClose }) {
       : 0;
 
   async function handleSubmit() {
+    
     setError('');
+
     if (!effectiveLeaveTypeId) {
       setError('Select a leave type.');
       return;
@@ -44,6 +47,7 @@ function LeaveApplyForm({ onClose }) {
       setError('Reason is required.');
       return;
     }
+
     try {
       await applyLeave({ leaveTypeId: effectiveLeaveTypeId, startDate, endDate, reason: reason.trim() }).unwrap();
       toast('Leave request submitted');
@@ -51,6 +55,7 @@ function LeaveApplyForm({ onClose }) {
     } catch (err) {
       setError(extractErrorMessage(err, 'Could not submit leave request.'));
     }
+
   }
 
   return (
@@ -59,12 +64,13 @@ function LeaveApplyForm({ onClose }) {
         <label className="fl">Leave type</label>
         <select className="fi" value={effectiveLeaveTypeId} onChange={(e) => setLeaveTypeId(e.target.value)}>
           <option value="">Select leave type</option>
-          {leaveTypes.map((type) => (
-            <option key={type._id} value={type._id}>
-              {type.name}
-            </option>
-          ))}
+            {leaveTypes.map((type) => (
+              <option key={type._id} value={type._id}>
+                 {type.name}
+              </option>
+            ))}
         </select>
+      
       </div>
       <div className="frow">
         <div className="ff">

@@ -17,12 +17,16 @@ function slipLines(lines) {
 }
 
 export default function PayrollSlipDocument({ slip, employee, structure, companyName = 'AttendanceHR' }) {
+
+    console.log('slip', slip, 'employee', employee, 'structure', structure, 'companyName', companyName);
+    
   const raw = slip.raw || {};
   const hasSlipLines = Array.isArray(raw.earnings) && raw.earnings.length > 0;
   const gross = hasSlipLines ? raw.grossSalary ?? 0 : structure?.grossSalary ?? slip.baseSalary ?? 0;
   const earnings = hasSlipLines
     ? slipLines(raw.earnings)
     : structure?.earnings?.length ? structure.earnings : [{ id: 'base', name: 'Basic salary', calcType: 'fixed', value: slip.baseSalary }];
+
   const deductions = hasSlipLines ? slipLines(raw.deductions) : (structure?.deductions || []).filter((d) => d.enabled !== false);
   const totalEarnings = earnings.reduce((sum, c) => sum + componentAmount(c, gross), 0);
   const totalDeductions = deductions.length ? deductions.reduce((sum, c) => sum + componentAmount(c, gross), 0) : slip.deductions || 0;

@@ -43,6 +43,8 @@ export default function SalarySlipsTab() {
   const slip = slipItems.map(normalizeSalarySlip)[0];
   const employee = employees.find((e) => e.id === effectiveUserId);
   const structure = normalizeSalaryStructure(structureData);
+  const companyName = employee?.company?.name || 'AttendanceHR';
+  console.log('slip', slip, 'employee', employee, 'structure', structure, 'companyName', companyName);
 
   function handlePrint() {
     setPrintMode(true);
@@ -111,7 +113,7 @@ export default function SalarySlipsTab() {
       {usersLoading || slipsLoading ? (
         <Spinner />
       ) : slip && employee ? (
-        <PayrollSlipDocument slip={slip} employee={employee} structure={structure} />
+        <PayrollSlipDocument slip={slip} employee={employee} structure={structure} companyName={companyName} />
       ) : (
         <EmptyState>No salary slip generated for this employee in the selected period</EmptyState>
       )}
@@ -125,12 +127,12 @@ export default function SalarySlipsTab() {
       </div>
 
       <Modal open={previewOpen} onClose={() => setPreviewOpen(false)} title="Salary Slip Preview">
-        {slip && employee ? <PayrollSlipDocument slip={slip} employee={employee} structure={structure} /> : null}
+        {slip && employee ? <PayrollSlipDocument slip={slip} employee={employee} structure={structure}  companyName={companyName}/> : null}
       </Modal>
 
       {printMode && slip && employee ? (
         <PrintPortal>
-          <PayrollSlipDocument slip={slip} employee={employee} structure={structure} />
+          <PayrollSlipDocument slip={slip} employee={employee} structure={structure} companyName={companyName} />
         </PrintPortal>
       ) : null}
     </div>

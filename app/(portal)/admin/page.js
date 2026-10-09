@@ -11,6 +11,7 @@ import LeaveTab from '@/components/admin/LeaveTab';
 import SalaryTab from '@/components/admin/SalaryTab';
 import SalaryFieldsTab from '@/components/admin/SalaryFieldsTab';
 import CorrectionsTab from '@/components/admin/CorrectionsTab';
+import OvertimeTab from '@/components/admin/OvertimeTab';
 import HolidaysTab from '@/components/admin/HolidaysTab';
 import ReportsTab from '@/components/admin/ReportsTab';
 import AttendanceReportTab from '@/components/admin/AttendanceReportTab';
@@ -18,13 +19,13 @@ import AttendanceCalendarTab from '@/components/admin/AttendanceCalendarTab';
 import CompanyManagementTab from '@/components/admin/CompanyManagementTab';
 import SettingsTab from '@/components/admin/SettingsTab';
 
-
 const TABS = [
   { key: 'employees', label: 'Employees' },
   { key: 'leave', label: 'Leave' },
   { key: 'salary', label: 'Salary' },
   { key: 'salaryFields', label: 'Salary Fields' },
   { key: 'corrections', label: 'Corrections' },
+  { key: 'overtime', label: 'Overtime' },
   { key: 'attendanceCalendar', label: 'Calendar' },
   { key: 'reports', label: 'Reports' },
   { key: 'attendanceReport', label: 'Attendance Report' },
@@ -41,7 +42,7 @@ function SuperAdminHome() {
   return (
     <>
       <div className="ph">
-        <h1>Super Admin</h1>
+        <h1>Super Admin</h1> 
         <p>Create and manage companies across the platform</p>
       </div>
       <CompanyManagementTab />
@@ -73,6 +74,7 @@ export default function AdminPage() {
         {active === 'leave' ? <LeaveTab /> : null}
         {active === 'salary' ? <SalaryTab /> : null}
         {active === 'corrections' ? <CorrectionsTab /> : null}
+        {active === 'overtime' ? <OvertimeTab /> : null}
         {active === 'attendanceCalendar' ? <AttendanceCalendarTab /> : null}
         {active === 'salaryFields' ? <SalaryFieldsTab /> : null}
         {active === 'holidays' ? <HolidaysTab /> : null}

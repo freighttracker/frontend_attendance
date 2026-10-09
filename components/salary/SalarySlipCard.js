@@ -1,7 +1,7 @@
 import { MONTH_NAMES, fmtCurrency } from '@/lib/utils/format';
 import { SalaryStatusPill } from '../ui/StatusPill';
 
-export default function SalarySlipCard({ slip, companyName = 'AttendanceHR', employeeName, employeeMeta }) {
+export default function SalarySlipCard({ slip, companyName , employeeName, employeeMeta }) {
   return (
     <div className="slip">
       <div className="slip-head">

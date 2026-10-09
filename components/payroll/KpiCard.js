@@ -15,7 +15,8 @@ function useCountUp(target) {
     function tick(now) {
       const progress = Math.min(1, (now - start) / duration);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(from + (to - from) * eased));
+      // Keep up to 2 decimals so values like 11.5 days / 8.67h aren't rounded off.
+      setValue(Math.round((from + (to - from) * eased) * 100) / 100);
       if (progress < 1) raf.current = requestAnimationFrame(tick);
     }
 

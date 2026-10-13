@@ -18,8 +18,10 @@ import AttendanceReportTab from '@/components/admin/AttendanceReportTab';
 import AttendanceCalendarTab from '@/components/admin/AttendanceCalendarTab';
 import CompanyManagementTab from '@/components/admin/CompanyManagementTab';
 import SettingsTab from '@/components/admin/SettingsTab';
+// import DashboardTab from '@/components/admin/DashboardTab';
 
 const TABS = [
+  { key: 'dashboard', label: 'Dashboard' },
   { key: 'employees', label: 'Employees' },
   { key: 'leave', label: 'Leave' },
   { key: 'salary', label: 'Salary' },
@@ -32,7 +34,6 @@ const TABS = [
   { key: 'holidays', label: 'Holidays' },
   { key: 'settings', label: 'Settings' },
 ];
-
 
 // A platform Super Admin's entire job is creating/managing companies - they
 // don't touch any single company's day-to-day HR data. They get a
@@ -70,6 +71,8 @@ export default function AdminPage() {
         <p>Manage team, attendance &amp; payroll</p>
       </div>
       <AdminTabs tabs={TABS} active={active} onChange={setActive} pendingCount={pendingCount} />
+
+        {/* {active === 'dashboard' ? <DashboardTab /> : null} */}
         {active === 'employees' ? <EmployeesTab /> : null}
         {active === 'leave' ? <LeaveTab /> : null}
         {active === 'salary' ? <SalaryTab /> : null}

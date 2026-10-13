@@ -29,7 +29,7 @@ function toDateKey(value) {
 // to fix that day. A day with a pending request opens the approve/reject
 // flow for that request instead of a blank direct correction.
 export default function CorrectionCalendarView() {
-  const { data: usersData, isLoading } = useGetUsersQuery({ page: 1, limit: 300, role: 'employee' });
+  const { data: usersData, isLoading } = useGetUsersQuery({ page: 1, limit: 300, role: 'employee', isActive: true });
   const { items } = unwrapList(usersData);
   const employees = items.map(normalizeUser);
   const [selectedId, setSelectedId] = useState('');

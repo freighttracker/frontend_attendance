@@ -27,7 +27,7 @@ export default function SalarySlipsTab() {
   const [printMode, setPrintMode] = useState(false);
   const toast = useToast();
 
-  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee' });
+  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee', activeFrom: `${period}-01` });
   const { items: userItems } = unwrapList(usersData);
   const employees = userItems.map(normalizeUser).filter((u) => u.role === 'employee');
   const effectiveUserId = userId || employees[0]?.id || '';

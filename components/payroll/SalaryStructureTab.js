@@ -34,7 +34,7 @@ export default function SalaryStructureTab() {
   const scopeParams = isSuperAdmin
     ? { companyId: scope.companyId || undefined, subCompanyId: scope.subCompanyId || undefined }
     : {};
-  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee', ...scopeParams });
+  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee', isActive: true, ...scopeParams });
   const { data: structuresData, isLoading: structuresLoading } = useGetSalaryStructuresQuery(scopeParams);
   const [generatePayroll] = useGeneratePayrollMutation();
   const toast = useToast();

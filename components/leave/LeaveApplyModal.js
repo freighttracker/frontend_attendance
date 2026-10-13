@@ -27,36 +27,36 @@ function LeaveApplyForm({ onClose }) {
       ? Math.round((new Date(endDate) - new Date(startDate)) / 86400000) + 1
       : 0;
 
-  async function handleSubmit() {
-    
-    setError('');
+    async function handleSubmit() {
+      
+      setError('');
 
-    if (!effectiveLeaveTypeId) {
-      setError('Select a leave type.');
-      return;
-    }
-    if (!startDate || !endDate) {
-      setError('Select from and to dates.');
-      return;
-    }
-    if (endDate < startDate) {
-      setError('To date must be after from date.');
-      return;
-    }
-    if (!reason.trim()) {
-      setError('Reason is required.');
-      return;
-    }
+      if (!effectiveLeaveTypeId) {
+        setError('Select a leave type.');
+        return;
+      }
+      if (!startDate || !endDate) {
+        setError('Select from and to dates.');
+        return;
+      }
+      if (endDate < startDate) {
+        setError('To date must be after from date.');
+        return;
+      }
+      if (!reason.trim()) {
+        setError('Reason is required.');
+        return;
+      }
 
-    try {
-      await applyLeave({ leaveTypeId: effectiveLeaveTypeId, startDate, endDate, reason: reason.trim() }).unwrap();
-      toast('Leave request submitted');
-      onClose();
-    } catch (err) {
-      setError(extractErrorMessage(err, 'Could not submit leave request.'));
-    }
+      try {
+        await applyLeave({ leaveTypeId: effectiveLeaveTypeId, startDate, endDate, reason: reason.trim() }).unwrap();
+        toast('Leave request submitted');
+        onClose();
+      } catch (err) {
+        setError(extractErrorMessage(err, 'Could not submit leave request.'));
+      }
 
-  }
+    }
 
   return (
     <>

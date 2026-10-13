@@ -14,7 +14,7 @@ import Modal from '../ui/Modal';
 // `lockTarget` pins employee + date so the admin only edits times/status.
 // Callers remount via `key` when `initial` changes.
 export default function DirectCorrectionModal({ open, onClose, initial, lockTarget = false, currentSummary }) {
-  const { data: usersData } = useGetUsersQuery({ page: 1, limit: 500, role: 'employee' }, { skip: !open });
+  const { data: usersData } = useGetUsersQuery({ page: 1, limit: 500, role: 'employee', isActive: true }, { skip: !open });
   const { items } = unwrapList(usersData);
   const employees = useMemo(() => items.map(normalizeUser), [items]);
 

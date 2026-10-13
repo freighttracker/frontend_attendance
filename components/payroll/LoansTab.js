@@ -17,7 +17,7 @@ export default function LoansTab() {
   const [payingLoan, setPayingLoan] = useState(null);
   const [status, setStatus] = useState('active');
 
-  const { data: usersData } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee' });
+  const { data: usersData } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee', isActive: true });
   const { data: loansData, isLoading } = useGetLoansQuery({ status: status || undefined, page: 1, limit: 100 });
 
   const { items: userItems } = unwrapList(usersData);

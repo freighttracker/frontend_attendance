@@ -19,7 +19,7 @@ export default function BonusesTab() {
   const [busyId, setBusyId] = useState(null);
   const toast = useToast();
 
-  const { data: usersData } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee' });
+  const { data: usersData } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee', isActive: true });
   const { data: bonusesData, isLoading } = useGetBonusesQuery({ page: 1, limit: 100 });
   const [approveBonus] = useApproveBonusMutation();
   const [deleteBonus, { isLoading: deleting }] = useDeleteBonusMutation();

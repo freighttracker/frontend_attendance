@@ -11,7 +11,7 @@ import EmptyState from '../ui/EmptyState';
 // AttendanceCalendar handles the month navigation and data itself.
 export default function AttendanceCalendarTab() {
   
-  const { data: usersData, isLoading } = useGetUsersQuery({ page: 1, limit: 300, role: 'employee' });
+  const { data: usersData, isLoading } = useGetUsersQuery({ page: 1, limit: 300, role: 'employee', isActive: true });
   const { items } = unwrapList(usersData);
   const employees = items.map(normalizeUser);
   const [selectedId, setSelectedId] = useState('');

@@ -1,14 +1,17 @@
-import { fmtCurrency, initials } from '@/lib/utils/format';
+import { fmtCurrency, fmtDate, initials } from '@/lib/utils/format';
 import { SalaryStatusPill } from '../ui/StatusPill';
 
-export default function SalaryRow({ name, slip, onGenerate, onApprove, onPublish, onMarkPaid, isBusy }) {
+export default function SalaryRow({ name, leftAt, slip, onGenerate, onApprove, onPublish, onMarkPaid, isBusy }) {
   return (
     <div className="srow">
       <div className="uav" style={{ width: 32, height: 32, fontSize: 11, flexShrink: 0 }}>
         {initials(name)}
       </div>
       <div className="sinfo">
-        <div className="sname">{name}</div>
+        <div className="sname">
+          {name}
+          {leftAt ? <span className="chip chip-rejected" style={{ marginLeft: 6 }}>Left {fmtDate(leftAt)}</span> : null}
+        </div>
         <div className="sbreak">
           {slip ? (
             <>

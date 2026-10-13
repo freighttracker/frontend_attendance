@@ -56,7 +56,7 @@ export default function NotificationsPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'flex-end' }}>
                 {!n.isRead ? (
                   <button className="btn btn-g btn-sm" style={{ padding: '4px 8px', fontSize: 10 }} onClick={() => markRead(n._id)}>
-                    Mark read
+                      Mark read
                   </button>
                 ) : null}
                 <button className="ib del" onClick={() => deleteNotification(n._id)} title="Delete">

@@ -21,7 +21,7 @@ export default function ReimbursementsTab() {
   const [activeCategory, setActiveCategory] = useState('');
   const toast = useToast();
 
-  const { data: usersData } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee' });
+  const { data: usersData } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee', isActive: true });
   const { data: reimbData, isLoading } = useGetReimbursementsQuery({ page: 1, limit: 100 });
   const [approveReimbursement] = useApproveReimbursementMutation();
 

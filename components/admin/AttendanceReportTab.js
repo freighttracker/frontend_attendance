@@ -57,7 +57,7 @@ export default function AttendanceReportTab() {
 
   // Loaded purely to populate the department/designation filter dropdowns -
   // the report table itself is fetched (and paginated) separately below.
-  const { data: usersData } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee' });
+  const { data: usersData } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee', isActive: true });
   const { items: userItems } = unwrapList(usersData);
   const employees = userItems.map(normalizeUser);
   const departments = useMemo(() => [...new Set(employees.map((e) => e.department).filter(Boolean))], [employees]);

@@ -35,7 +35,10 @@ export default function SalaryTab() {
   const [printMode, setPrintMode] = useState(false);
   const toast = useToast();
 
-  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee' });
+  // activeFrom keeps an employee who left on the list for the months they
+  // worked (so their last slip can still be generated/paid) and drops them
+  // from every month after their leaving date.
+  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee', activeFrom: `${loadedPeriod}-01` });
   const { data: slipsData, isLoading: slipsLoading } = useGetAllSalarySlipsQuery({ month, year, page: 1, limit: 200 });
   const [generateSlip, { isLoading: generating }] = useGenerateSalarySlipMutation();
   const [generateAll, { isLoading: generatingAll }] = useGenerateAllSalarySlipsMutation();
@@ -126,6 +129,7 @@ export default function SalaryTab() {
             <SalaryRow
               key={u.id}
               name={u.name}
+              leftAt={u.isActive === false ? u.leftAt : null}
               slip={slipForUser(u.id)}
               isBusy={isBusy}
               onGenerate={() => handleGenerate(u.id)}

@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { useGetAttendanceHistoryQuery } from '@/lib/services/attendanceApi';
 import { useAppSelector } from '@/lib/hooks';
@@ -29,6 +28,7 @@ export default function HistoryPage() {
   const endDate = filterMonth ? `${year}-${mo}-${String(new Date(Number(year), Number(mo), 0).getDate()).padStart(2, '0')}` : undefined;
 
   const { data, isLoading } = useGetAttendanceHistoryQuery({ page: 1, limit: 100, startDate, endDate });
+  
   const { items } = unwrapList(data);
   const records = items.map(normalizeAttendanceRecord).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
@@ -49,7 +49,7 @@ export default function HistoryPage() {
           List
         </button>
         <button className={`atab ${view === 'calendar' ? 'on' : ''}`} onClick={() => setView('calendar')}>
-          Calendar
+           Calendar
         </button>
       </div>
 
@@ -60,6 +60,7 @@ export default function HistoryPage() {
       ) : (
         <>
           <div className="frow" style={{ marginBottom: 12 }}>
+
             <div className="ff" style={{ margin: 0 }}>
               <input type="month" className="fi" style={{ fontSize: 12, padding: '9px 11px' }} value={month} onChange={(e) => setMonth(e.target.value)} />
             </div>

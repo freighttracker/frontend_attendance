@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useGetUsersQuery, useDeleteEmployeeMutation } from '@/lib/services/usersApi';
+import { useGetUsersQuery, useRejoinEmployeeMutation } from '@/lib/services/usersApi';
 import { useGetSalaryStructureQuery } from '@/lib/services/payrollApi';
 import { normalizeUser, normalizeSalaryStructure } from '@/lib/utils/normalize';
 import { unwrapList } from '@/lib/utils/queryParams';
@@ -10,7 +10,8 @@ import { selectIsSuperAdmin } from '@/lib/features/authSlice';
 import EmployeeRow from './EmployeeRow';
 import EmployeeModal from './EmployeeModal';
 import BulkSalaryModal from './BulkSalaryModal';
-import ConfirmModal from '../ui/ConfirmModal';
+import MarkLeftModal from './MarkLeftModal';
+import ExitSummaryModal from './ExitSummary';
 import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 import Modal from '../ui/Modal';
@@ -44,34 +45,39 @@ export default function EmployeesTab() {
   // own company, so the picker would be misleading noise for them.
   const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
   const [scope, setScope] = useState({ companyId: '', subCompanyId: '' });
+  // Employees who have left are only deactivated, never erased - they drop
+  // out of salary/payroll/attendance from the month after their leaving
+  // date, but stay reachable here under "Left" so they can be brought back.
+  const [statusFilter, setStatusFilter] = useState('active');
   const { data, isLoading } = useGetUsersQuery({
     page: 1,
     limit: 200,
+    isActive: statusFilter === 'all' ? undefined : statusFilter === 'active',
     companyId: isSuperAdmin ? scope.companyId || undefined : undefined,
     subCompanyId: isSuperAdmin ? scope.subCompanyId || undefined : undefined,
   });
-  
-  const [deleteEmployee, { isLoading: deleting }] = useDeleteEmployeeMutation();
+
+  const [rejoinEmployee, { isLoading: rejoining }] = useRejoinEmployeeMutation();
   const toast = useToast();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [bulkOpen, setBulkOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [leavingEmployee, setLeavingEmployee] = useState(null);
+  const [exitEmployee, setExitEmployee] = useState(null);
   const [newEmployeeForSalary, setNewEmployeeForSalary] = useState(null);
 
   const { items } = unwrapList(data);
   const users = items.map(normalizeUser);
-  const employees = users.filter((u) => u.role === 'employee');
+  const employees = users.filter((u) => u.role === 'employee' && u.isActive !== false);
 
-  async function handleDelete() {
-    if (!deleteTarget) return;
+
+  async function handleRejoin(user) {
     try {
-      await deleteEmployee(deleteTarget.id).unwrap();
-      toast('Employee removed');
-      setDeleteTarget(null);
+      await rejoinEmployee(user.id).unwrap();
+      toast('Employee is active again');
     } catch (err) {
-      toast(extractErrorMessage(err, 'Could not remove employee.'), 'err');
+      toast(extractErrorMessage(err, 'Could not reactivate employee.'), 'err');
     }
   }
 
@@ -95,6 +101,16 @@ export default function EmployeesTab() {
         <button className="btn btn-g btn-sm" onClick={() => setBulkOpen(true)}>
           Bulk salaries
         </button>
+        <select
+          className="fi"
+          style={{ width: 'auto', fontSize: 12, padding: '7px 10px', marginLeft: 'auto' }}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="active">Active</option>
+          <option value="left">Left</option>
+          <option value="all">All</option>
+        </select>
       </div>
       <div className="card" style={{ padding: '0 16px' }}>
         {isLoading ? (
@@ -108,11 +124,14 @@ export default function EmployeesTab() {
                 setEditingUser(user);
                 setModalOpen(true);
               }}
-              onDelete={setDeleteTarget}
+              onMarkLeft={setLeavingEmployee}
+              onRejoin={handleRejoin}
+              onViewExit={setExitEmployee}
+              isBusy={rejoining}
             />
           ))
         ) : (
-          <EmptyState>No employees yet</EmptyState>
+          <EmptyState>{statusFilter === 'left' ? 'No employees have left' : 'No employees yet'}</EmptyState>
         )}
       </div>
 
@@ -126,18 +145,8 @@ export default function EmployeesTab() {
       {newEmployeeForSalary ? (
         <NewEmployeeSalarySetup employee={newEmployeeForSalary} onClose={() => setNewEmployeeForSalary(null)} />
       ) : null}
-      <ConfirmModal
-        open={Boolean(deleteTarget)}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
-        isLoading={deleting}
-        title="Remove Employee?"
-        subtitle={
-          <>
-            Permanently deletes <b>{deleteTarget?.name}</b> and all their attendance, leave records. Cannot be undone.
-          </>
-        }
-      />
+      <MarkLeftModal employee={leavingEmployee} onClose={() => setLeavingEmployee(null)} />
+      <ExitSummaryModal employee={exitEmployee} onClose={() => setExitEmployee(null)} />
     </div>
   );
 }

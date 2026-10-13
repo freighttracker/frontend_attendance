@@ -23,7 +23,7 @@ export default function GeneratePayrollTab() {
   const [selected, setSelected] = useState(() => new Set());
   const [confirmScope, setConfirmScope] = useState(null);
 
-  const { data: usersData, isLoading } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee' });
+  const { data: usersData, isLoading } = useGetUsersQuery({ page: 1, limit: 200, role: 'employee', activeFrom: `${period}-01` });
   const [generatePayroll, { isLoading: generating }] = useGeneratePayrollMutation();
   const toast = useToast();
 

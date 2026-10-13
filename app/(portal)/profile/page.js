@@ -14,6 +14,7 @@ import PrintPortal from '@/components/ui/PrintPortal';
 import { EditIcon, PrinterIcon } from '@/components/icons';
 
 export default function ProfilePage() {
+  
   const { data, isLoading } = useGetMyProfileQuery();
   const profile = normalizeUser(data?.user || data);
   const [editOpen, setEditOpen] = useState(false);

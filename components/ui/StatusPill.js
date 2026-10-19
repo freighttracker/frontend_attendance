@@ -9,6 +9,7 @@ const ATTENDANCE_CLASS = {
   weekend: 'aw',
   holiday: 'ahol',
   upcoming: 'aul',
+  not_checked_in: 'aul',
 };
 
 const LEAVE_CLASS = {

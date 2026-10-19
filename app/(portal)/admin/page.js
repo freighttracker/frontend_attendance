@@ -18,7 +18,7 @@ import AttendanceReportTab from '@/components/admin/AttendanceReportTab';
 import AttendanceCalendarTab from '@/components/admin/AttendanceCalendarTab';
 import CompanyManagementTab from '@/components/admin/CompanyManagementTab';
 import SettingsTab from '@/components/admin/SettingsTab';
-// import DashboardTab from '@/components/admin/DashboardTab';
+import DashboardTab from '@/components/admin/DashboardTab';
 
 const TABS = [
   { key: 'dashboard', label: 'Dashboard' },
@@ -55,7 +55,7 @@ export default function AdminPage() {
   const user = useAppSelector(selectCurrentUser);
   const isPlatformSuperAdmin = user?.role === 'superadmin';
 
-  const [active, setActive] = useState('employees');
+  const [active, setActive] = useState('dashboard');
   const { data } = useGetAllLeavesQuery({ status: 'pending', page: 1, limit: 100 }, { skip: isPlatformSuperAdmin });
   const { items, pagination } = unwrapList(data);
   const pendingCount = pagination?.total ?? items.length;
@@ -72,7 +72,7 @@ export default function AdminPage() {
       </div>
       <AdminTabs tabs={TABS} active={active} onChange={setActive} pendingCount={pendingCount} />
 
-        {/* {active === 'dashboard' ? <DashboardTab /> : null} */}
+        {active === 'dashboard' ? <DashboardTab onNavigate={setActive} /> : null}
         {active === 'employees' ? <EmployeesTab /> : null}
         {active === 'leave' ? <LeaveTab /> : null}
         {active === 'salary' ? <SalaryTab /> : null}

@@ -164,7 +164,7 @@ export default function CorrectionCalendarView() {
       </div>
 
       <DirectCorrectionModal
-        key={direct ? `${selectedId}-${direct.date}-${overrideDay ? 'override' : 'direct'}` : 'none'}
+        key={direct ? `${selectedId}-${direct.date}-${overrideDay ? 'override' : 'direct'}` : 'direct-none'}
         open={Boolean(direct)}
         onClose={closeDirect}
         lockTarget
@@ -184,7 +184,7 @@ export default function CorrectionCalendarView() {
         }
       />
       <ApproveCorrectionModal
-        key={approving ? `${approving._id}-${initialDecision}` : 'none'}
+        key={approving ? `approve-${approving._id}-${initialDecision}` : 'approve-none'}
         correction={approving}
         initialDecision={initialDecision}
         onClose={closeApprove}

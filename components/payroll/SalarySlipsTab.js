@@ -121,7 +121,7 @@ export default function SalarySlipsTab() {
       <div className="card" style={{ marginTop: 16 }}>
         <div className="card-label">Salary history</div>
         <SalaryHistoryTimeline
-          userId={userId}
+          userId={effectiveUserId}
           onSelect={(s) => setPeriod(`${s.year}-${pad(s.month)}`)}
         />
       </div>

@@ -501,3 +501,31 @@ textarea.fi { resize: vertical; min-height: 68px; }
   .ni.on { background: var(--ind-l); }
   .ni-pip { display: none; }
 }
+
+/* Admin dashboard */
+.dash-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.dash-date { font-size: 14px; font-weight: 800; color: var(--black); letter-spacing: -.2px; }
+.dash-refresh { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--g400); font-weight: 700; }
+.dash-muted { font-size: 10px; color: var(--g400); font-weight: 600; }
+.dash-badge { position: absolute; top: 6px; right: 6px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--red); color: white; font-size: 9px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+.dash-filters { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 4px; scrollbar-width: none; }
+.dash-filters::-webkit-scrollbar { display: none; }
+.dash-chip { flex-shrink: 0; padding: 6px 10px; border-radius: 20px; border: 1px solid var(--g200); background: var(--white); font-family: var(--f); font-size: 10px; font-weight: 700; color: var(--g600); cursor: pointer; transition: all .12s; }
+.dash-chip span { color: var(--g400); margin-left: 2px; }
+.dash-chip.on { background: var(--black); border-color: var(--black); color: var(--white); }
+.dash-chip.on span { color: var(--g300); }
+.dash-times { text-align: right; font-size: 11px; color: var(--g600); flex-shrink: 0; }
+.dash-times b { color: var(--black); font-weight: 700; }
+.dash-live { color: var(--ind-d); font-weight: 700; }
+.dash-flag { display: inline-block; margin-left: 5px; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 10px; background: var(--g100); color: var(--g600); }
+.dash-flag.late { background: var(--amb-l); color: var(--amb); }
+.dash-depts { display: flex; flex-direction: column; gap: 12px; max-height: 220px; overflow-y: auto; }
+.dash-dept-top { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--black); margin-bottom: 5px; }
+.dash-bar { height: 7px; border-radius: 4px; background: var(--g100); overflow: hidden; }
+.dash-bar div { height: 100%; border-radius: 4px; background: var(--ind); transition: width .4s ease; }
+.dash-stat { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--g100); font-size: 12px; color: var(--g600); }
+.dash-stat:last-child { border-bottom: none; }
+.dash-celebs { max-height: 260px; overflow-y: auto; }
+.uav.dash-celeb-today { background: var(--amb); }
+.dash-stat b { color: var(--black); font-weight: 800; }
+@media (max-width: 480px) { .dash-times { font-size: 10px; } .dash-times .dash-flag { display: block; margin: 2px 0 0; } }

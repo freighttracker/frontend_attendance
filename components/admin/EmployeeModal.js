@@ -19,6 +19,7 @@ const emptyForm = {
   department: '',
   designation: '',
   joiningDate: '',
+  dateOfBirth: '',
   baseSalary: '',
   role: 'employee',
 };
@@ -35,6 +36,7 @@ function formFromEmployee(employee) {
     department: employee.department || '',
     designation: employee.designation || '',
     joiningDate: employee.joiningDate ? employee.joiningDate.slice(0, 10) : '',
+    dateOfBirth: employee.dateOfBirth ? employee.dateOfBirth.slice(0, 10) : '',
     baseSalary: employee.baseSalary ?? '',
     role: employee.role || 'employee',
   };
@@ -170,6 +172,10 @@ function EmployeeForm({ onClose, employee, onCreated }) {
           <label className="fl">Join date</label>
           <input className="fi" type="date" value={form.joiningDate} onChange={set('joiningDate')} />
         </div>
+      </div>
+      <div className="ff">
+        <label className="fl">Date of birth</label>
+        <input className="fi" type="date" value={form.dateOfBirth} onChange={set('dateOfBirth')} max={new Date().toISOString().slice(0, 10)} />
       </div>
       {isSuperAdmin ? (
         <div className="ff">

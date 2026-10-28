@@ -1,5 +1,14 @@
 import { fmtDayMonth, fmtTime, DAY_NAMES, fmtDurationSeconds, todayISO } from '@/lib/utils/format';
 import { AttendanceStatusPill } from '../ui/StatusPill';
+import { fmtDistance } from '@/lib/utils/geolocation';
+import LocationBadge from '../geo/LocationBadge';
+
+// Recorded check-in/out location, if the punch carried any (legacy records
+// and companies without geofencing show nothing).
+function punchLocationText(punch) {
+  if (!punch?.time || (!punch.officeName && (!punch.validationStatus || punch.validationStatus === 'not_required'))) return null;
+  return punch.officeName ? `${punch.officeName} (${fmtDistance(punch.distanceMeters)})` : 'no office';
+}
 
 export default function AttendanceRow({ record, onRequestCorrection }) {
 
@@ -9,6 +18,10 @@ export default function AttendanceRow({ record, onRequestCorrection }) {
   const dateOnly = record.date ? String(record.date).slice(0, 10) : null;
   const isMissingPunch = !record.checkIn || !record.checkOut;
   const canRequestCorrection = Boolean(onRequestCorrection) && isMissingPunch && dateOnly && dateOnly <= todayISO();
+  const rawIn = record.raw?.checkIn;
+  const rawOut = record.raw?.checkOut;
+  const inText = punchLocationText(rawIn);
+  const outText = punchLocationText(rawOut);
 
   return (
     <div className="arow">
@@ -23,6 +36,14 @@ export default function AttendanceRow({ record, onRequestCorrection }) {
         <div className="adur">
           {hours} · {dayName}
         </div>
+        {inText || outText ? (
+          <div className="geo-sub" style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
+            {inText ? <span>In: {inText}</span> : null}
+            {inText ? <LocationBadge validationStatus={rawIn.validationStatus} reviewStatus={rawIn.reviewStatus} /> : null}
+            {outText ? <span>· Out: {outText}</span> : null}
+            {outText ? <LocationBadge validationStatus={rawOut.validationStatus} reviewStatus={rawOut.reviewStatus} /> : null}
+          </div>
+        ) : null}
       </div>
       <AttendanceStatusPill status={record.status} />
       {canRequestCorrection ? (

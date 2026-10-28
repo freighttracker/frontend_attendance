@@ -9,7 +9,7 @@ const PHASE_IDLE = 'idle';
 const PHASE_RUNNING = 'running';
 const PHASE_DONE = 'done';
 
-export default function GenerateConfirmModal({ open, onClose, count, month, year, scopeLabel, isLoading, onConfirm }) {
+export default function GenerateConfirmModal({ open, onClose, count, month, year, scopeLabel, isLoading, onConfirm, isRegenerate = false, doneCount }) {
   const [phase, setPhase] = useState(PHASE_IDLE);
   const [prevOpen, setPrevOpen] = useState(open);
   const [prevLoading, setPrevLoading] = useState(isLoading);
@@ -33,7 +33,7 @@ export default function GenerateConfirmModal({ open, onClose, count, month, year
     <Modal
       open={open}
       onClose={phase === PHASE_RUNNING ? undefined : onClose}
-      title={phase === PHASE_DONE ? 'Payroll Generated' : 'Generate Payroll?'}
+      title={phase === PHASE_DONE ? (isRegenerate ? 'Payroll Regenerated' : 'Payroll Generated') : (isRegenerate ? 'Regenerate Payroll?' : 'Generate Payroll?')}
       subtitle={phase === PHASE_IDLE ? `${scopeLabel} for ${MONTH_NAMES[(month || 1) - 1]} ${year}` : undefined}
       actions={
         phase === PHASE_IDLE ? (
@@ -42,7 +42,7 @@ export default function GenerateConfirmModal({ open, onClose, count, month, year
               Cancel
             </button>
             <button className="btn btn-p" style={{ flex: 1 }} onClick={handleConfirm}>
-              Generate
+              {isRegenerate ? 'Regenerate' : 'Generate'}
             </button>
           </>
         ) : phase === PHASE_DONE ? (
@@ -54,7 +54,14 @@ export default function GenerateConfirmModal({ open, onClose, count, month, year
     >
       {phase === PHASE_IDLE ? (
         <div style={{ fontSize: 12, color: 'var(--g600)' }}>
-          This will generate salary slips for <b>{count}</b> employee{count === 1 ? '' : 's'}. Existing slips for this period will be regenerated.
+          {isRegenerate ? (
+            <>
+              This will recalculate salary slips for <b>{count}</b> employee{count === 1 ? '' : 's'} using their <b>latest salary structure</b>,
+              even if it was set to take effect from a later month. Published, paid or locked slips are skipped.
+            </>
+          ) : (
+            <>This will generate salary slips for <b>{count}</b> employee{count === 1 ? '' : 's'}. Existing slips for this period will be regenerated.</>
+          )}
         </div>
       ) : (
         <div className="gen-progress-wrap">
@@ -68,7 +75,9 @@ export default function GenerateConfirmModal({ open, onClose, count, month, year
               <div className="gen-success">
                 <CheckIcon />
               </div>
-              <div style={{ fontSize: 13, fontWeight: 800 }}>{count} slip{count === 1 ? '' : 's'} generated successfully</div>
+              <div style={{ fontSize: 13, fontWeight: 800 }}>
+                {doneCount ?? count} slip{(doneCount ?? count) === 1 ? '' : 's'} {isRegenerate ? 'regenerated' : 'generated'} successfully
+              </div>
             </>
           )}
         </div>

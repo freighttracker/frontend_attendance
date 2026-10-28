@@ -15,21 +15,21 @@ export default function LeaveRow({ leave, onCancel, showUser }) {
           {typeName ? ` · ${typeName}` : ''}
         </div>
         <div className="lreason">{leave.reason || 'No reason provided'}</div>
-        {leave.totalDays ? (
-          <div className="ldays-label">
-            {leave.totalDays} day{leave.totalDays > 1 ? 's' : ''} applied
-          </div>
-        ) : null}
-        {leave.status === 'approved' && leave.paidStatus ? (
-          <div className="ldays-label">
-            Paid: {leave.paidDays} day{leave.paidDays === 1 ? '' : 's'} · Unpaid: {leave.unpaidDays} day{leave.unpaidDays === 1 ? '' : 's'}
-          </div>
-        ) : null}
-        {leave.status === 'rejected' && leave.rejectionReason ? (
-          <div className="lreason" style={{ color: 'var(--red)' }}>
-            {leave.rejectionReason}
-          </div>
-        ) : null}
+          {leave.totalDays ? (
+            <div className="ldays-label">
+              {leave.totalDays} day{leave.totalDays > 1 ? 's' : ''} applied
+            </div>
+          ) : null}
+          {leave.status === 'approved' && leave.paidStatus ? (
+            <div className="ldays-label">
+              Paid: {leave.paidDays} day{leave.paidDays === 1 ? '' : 's'} · Unpaid: {leave.unpaidDays} day{leave.unpaidDays === 1 ? '' : 's'}
+            </div>
+          ) : null}
+          {leave.status === 'rejected' && leave.rejectionReason ? (
+            <div className="lreason" style={{ color: 'var(--red)' }}>
+              {leave.rejectionReason}
+            </div>
+          ) : null}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
         <LeaveStatusPill status={leave.status} />

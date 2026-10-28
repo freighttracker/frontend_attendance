@@ -11,6 +11,7 @@ const SERIES = [
 const LABELS = Object.fromEntries(SERIES.map((s) => [s.key, s.label]));
 
 export default function AttendanceTrendChart({ data }) {
+  
   if (!data || !data.some((d) => d.present || d.halfDay || d.onLeave)) {
     return <div className="chart-empty">No attendance recorded in the last 7 days</div>;
   }

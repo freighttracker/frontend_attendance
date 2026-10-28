@@ -529,3 +529,27 @@ textarea.fi { resize: vertical; min-height: 68px; }
 .uav.dash-celeb-today { background: var(--amb); }
 .dash-stat b { color: var(--black); font-weight: 800; }
 @media (max-width: 480px) { .dash-times { font-size: 10px; } .dash-times .dash-flag { display: block; margin: 2px 0 0; } }
+
+/* GPS / geofenced attendance */
+.lmap { width: 100%; border-radius: var(--r); border: 1px solid var(--g200); overflow: hidden; position: relative; z-index: 0; isolation: isolate; background: var(--g100); }
+.lmap.pick { cursor: crosshair; }
+.gpill { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 20px; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.g-ok { background: var(--grn-l); color: var(--grn); }
+.g-warn { background: var(--amb-l); color: var(--amb); }
+.g-bad { background: var(--red-l); color: var(--red); }
+.g-muted { background: var(--g100); color: var(--g600); }
+.geo-panel { margin-top: 12px; padding: 10px 12px; border-radius: var(--r); background: rgba(255,255,255,.08); color: rgba(255,255,255,.7); font-size: 11px; text-align: left; position: relative; z-index: 1; }
+.geo-panel b { color: white; }
+.geo-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 3px 0; flex-wrap: wrap; }
+.geo-note { font-size: 10px; opacity: .75; margin-top: 4px; }
+.geo-sub { font-size: 10px; color: var(--g400); margin-top: 2px; }
+.geo-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.geo-filters .ff { margin: 0; }
+.geo-filters .fi { font-size: 12px; padding: 8px 10px; }
+@media (min-width: 720px) { .geo-filters { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.tw td.wrap { white-space: normal; min-width: 140px; }
+.tw tr.click { cursor: pointer; }
+.tw tr.click:hover td { background: var(--g100); }
+.pager { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; font-size: 11px; color: var(--g600); }
+.chk { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--black); cursor: pointer; }
+.chk input { width: 16px; height: 16px; accent-color: var(--ind); }

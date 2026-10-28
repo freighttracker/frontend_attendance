@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
@@ -8,7 +7,7 @@ import { useLoginMutation } from '@/lib/services/authApi';
 import { useEffect } from 'react';
 
 export default function LoginPage() {
-
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,13 +25,14 @@ export default function LoginPage() {
   }, [isHydrated, isAuthenticated, isAdmin, router]);
 
   async function handleSubmit(e) {
+    
     e.preventDefault();
     setError('');
     if (!email || !password) {
       setError('Fill in all fields.');
       return;
     }
-
+    
     try {
 
       const data = await login({ email: email.trim().toLowerCase(), password }).unwrap();
@@ -42,9 +42,11 @@ export default function LoginPage() {
       if (data.refreshToken) localStorage.setItem('attendance_refresh_token', data.refreshToken);
       const adminTierRoles = ['superadmin', 'admin', 'company_admin', 'subcompany_admin'];
       router.replace(adminTierRoles.includes(data.user?.role) ? '/admin' : '/home');
+
     } catch (err) {
       setError(err?.data?.message || 'Invalid email or password.');
     }
+
   }
 
   return (

@@ -17,6 +17,8 @@ import Spinner from '../ui/Spinner';
 import Modal from '../ui/Modal';
 import SalaryStructureModal from '../payroll/SalaryStructureModal';
 import CompanyHierarchySelector from './CompanyHierarchySelector';
+import OfficeAssignmentModal from './OfficeAssignmentModal';
+import { useGetMyGeoPermissionsQuery } from '@/lib/services/geoApi';
 
 // After an employee is created, skip the extra "go configure their salary"
 // step admins used to have to remember - jump straight into the Salary
@@ -66,6 +68,8 @@ export default function EmployeesTab() {
   const [leavingEmployee, setLeavingEmployee] = useState(null);
   const [exitEmployee, setExitEmployee] = useState(null);
   const [newEmployeeForSalary, setNewEmployeeForSalary] = useState(null);
+  const [officeEmployee, setOfficeEmployee] = useState(null);
+  const { data: geoPerms } = useGetMyGeoPermissionsQuery();
 
   const { items } = unwrapList(data);
   const users = items.map(normalizeUser);
@@ -127,6 +131,7 @@ export default function EmployeesTab() {
               onMarkLeft={setLeavingEmployee}
               onRejoin={handleRejoin}
               onViewExit={setExitEmployee}
+              onOffices={geoPerms?.canManageAssignments ? setOfficeEmployee : undefined}
               isBusy={rejoining}
             />
           ))
@@ -147,6 +152,11 @@ export default function EmployeesTab() {
       ) : null}
       <MarkLeftModal employee={leavingEmployee} onClose={() => setLeavingEmployee(null)} />
       <ExitSummaryModal employee={exitEmployee} onClose={() => setExitEmployee(null)} />
+      <OfficeAssignmentModal
+        employee={officeEmployee}
+        companyId={isSuperAdmin ? scope.companyId || undefined : undefined}
+        onClose={() => setOfficeEmployee(null)}
+      />
     </div>
   );
 }

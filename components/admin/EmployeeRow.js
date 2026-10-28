@@ -1,7 +1,7 @@
 import { fmtCurrency, fmtDate, initials } from '@/lib/utils/format';
-import { EditIcon, LogOutIcon } from '../icons';
+import { EditIcon, LogOutIcon, MapPinIcon } from '../icons';
 
-export default function EmployeeRow({ user, onEdit, onMarkLeft, onRejoin, onViewExit, isBusy }) {
+export default function EmployeeRow({ user, onEdit, onMarkLeft, onRejoin, onViewExit, onOffices, isBusy }) {
   const hasLeft = user.isActive === false;
   return (
     <div className="urow">
@@ -21,6 +21,11 @@ export default function EmployeeRow({ user, onEdit, onMarkLeft, onRejoin, onView
         <button className="ib" onClick={() => onEdit(user)} title="Edit">
           <EditIcon />
         </button>
+        {onOffices && !hasLeft ? (
+          <button className="ib" onClick={() => onOffices(user)} title="Office assignments">
+            <MapPinIcon />
+          </button>
+        ) : null}
         {hasLeft ? (
           <>
             <button className="btn btn-g btn-sm" onClick={() => onViewExit?.(user)} title="Dues, final pay and exit details">

@@ -63,7 +63,7 @@ export function ExitSummaryPanel({ employeeId, leavingDate }) {
 
       <Section title="To recover from employee">
         {recoverable.total > 0 ? (
-          <>
+          <>  
             {recoverable.loanCount ? <Line label={`Loan balance (${recoverable.loanCount})`} value={fmtCurrency(recoverable.loanBalance)} tone="red" /> : null}
             {recoverable.advanceCount ? <Line label={`Advance salary balance (${recoverable.advanceCount})`} value={fmtCurrency(recoverable.advanceBalance)} tone="red" /> : null}
           </>
@@ -86,6 +86,7 @@ export function ExitSummaryPanel({ employeeId, leavingDate }) {
         ))}
         {payable.approvedBonuses > 0 ? <Line label="Approved bonuses (unpaid)" value={fmtCurrency(payable.approvedBonuses)} /> : null}
         {payable.approvedReimbursements > 0 ? <Line label="Approved reimbursements (unpaid)" value={fmtCurrency(payable.approvedReimbursements)} /> : null}
+
       </Section>
 
       <Section title={isPreview ? 'Open items' : 'Still open'}>

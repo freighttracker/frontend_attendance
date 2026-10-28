@@ -16,6 +16,11 @@ export default function SalaryRow({ name, leftAt, slip, onGenerate, onApprove, o
           {slip ? (
             <>
               {slip.presentDays ?? 0}P · {slip.halfDays ?? 0}HD · {slip.absentDays ?? 0}A
+              {slip.lateCount > 0 ? (
+                <span title={slip.lateDeductionUnits > 0 ? `${slip.lateCount} late marks - ${slip.lateDeductionUnits} day deducted` : `${slip.lateCount} late marks - no deduction`}>
+                  {' '}· {slip.lateCount}L{slip.lateDeductionUnits > 0 ? ` (−${slip.lateDeductionUnits}d)` : ''}
+                </span>
+              ) : null}
             </>
           ) : (
             'No slip generated'

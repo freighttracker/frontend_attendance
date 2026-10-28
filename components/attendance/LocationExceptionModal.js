@@ -6,7 +6,9 @@ import Modal from '../ui/Modal';
 // employee can retry (fresh GPS reading) or, when the policy allows it,
 // submit the punch with a reason for an admin to review.
 export default function LocationExceptionModal({ problem, onClose, onRetry, onSubmitException, isBusy }) {
-   
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState('');
+  const actionLabel = problem?.action === 'checkOut' ? 'check out' : 'check in';
 
   async function handleSubmit() {
 

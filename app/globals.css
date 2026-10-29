@@ -516,6 +516,14 @@ textarea.fi { resize: vertical; min-height: 68px; }
 .dash-chip.on span { color: var(--g300); }
 .dash-times { text-align: right; font-size: 11px; color: var(--g600); flex-shrink: 0; }
 .dash-times b { color: var(--black); font-weight: 700; }
+.dash-pills { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.urow.click { cursor: pointer; }
+.urow.click:hover { background: var(--g100); }
+.dash-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+.dash-dot.g-ok { background: var(--grn); }
+.dash-dot.g-warn { background: var(--amb); }
+.dash-dot.g-bad { background: var(--red); }
+.dash-dot.g-muted { background: var(--g400); }
 .dash-live { color: var(--ind-d); font-weight: 700; }
 .dash-flag { display: inline-block; margin-left: 5px; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 10px; background: var(--g100); color: var(--g600); }
 .dash-flag.late { background: var(--amb-l); color: var(--amb); }

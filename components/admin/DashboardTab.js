@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import { useGetAdminDashboardQuery } from '@/lib/services/dashboardApi';
-import { fmtDate, fmtDateLong, fmtDayMonth, fmtTime, initials } from '@/lib/utils/format';
+import { useGetAttendanceLocationsQuery, useGetMyGeoPermissionsQuery } from '@/lib/services/geoApi';
+import { fmtDate, fmtDateLong, fmtDayMonth, fmtTime, initials, pad } from '@/lib/utils/format';
+import { fmtAccuracy, fmtDistance } from '@/lib/utils/geolocation';
+import LocationBadge from '../geo/LocationBadge';
+import LocationDetailModal from './LocationDetailModal';
 import KpiCard from '../payroll/KpiCard';
 import { AttendanceStatusPill } from '../ui/StatusPill';
 import Spinner from '../ui/Spinner';
@@ -33,12 +37,102 @@ const FILTERS = [
   { key: 'not_checked_in', label: 'Not checked in', match: (e) => e.status === 'not_checked_in' },
   { key: 'on_leave', label: 'On leave', match: (e) => e.status === 'on_leave' },
   { key: 'absent', label: 'Absent', match: (e) => e.status === 'absent' },
+  { key: 'review', label: 'In review', match: (e) => e.locationReview === 'pending', needsLocations: true },
 ];
+
+// "Office · 35 m · ±13 m" for one punch; empty when nothing was recorded.
+const locationLine = (loc) =>
+  loc
+    ? [loc.officeName, loc.distanceMeters != null ? fmtDistance(loc.distanceMeters) : null, loc.accuracy ? fmtAccuracy(loc.accuracy) : null]
+        .filter(Boolean)
+        .join(' · ')
+    : '';
+
+// Today's location outcome per employee, worst punch first. Order here is
+// also the chip order on the monitoring card.
+const LOCATION_BUCKETS = [
+  { key: 'review', label: 'In review', tone: 'warn' },
+  { key: 'outside_geofence', label: 'Outside geofence', tone: 'bad' },
+  { key: 'low_accuracy', label: 'Low GPS accuracy', tone: 'warn' },
+  { key: 'no_office', label: 'No office assigned', tone: 'muted' },
+  { key: 'no_location', label: 'No location', tone: 'muted' },
+  { key: 'rejected', label: 'Rejected', tone: 'bad' },
+  { key: 'approved', label: 'Exception approved', tone: 'ok' },
+  { key: 'inside', label: 'Inside geofence', tone: 'ok' },
+];
+const CLEAN_BUCKETS = ['inside', 'approved'];
+
+function locationBucket(e) {
+  if (!e.checkInLocation && !e.checkOutLocation) return null;
+  if (e.locationReview === 'pending') return 'review';
+  if (e.locationReview === 'rejected') return 'rejected';
+  if (e.locationReview === 'approved') return 'approved';
+  const bad = [e.checkInLocation, e.checkOutLocation].find((l) => l && !['valid', 'not_required'].includes(l.validationStatus));
+  return bad ? bad.validationStatus : 'inside';
+}
 
 const fmtHours = (h) => {
   const mins = Math.round((Number(h) || 0) * 60);
   return mins ? `${Math.floor(mins / 60)}h ${mins % 60}m` : '—';
 };
+
+const todayIso = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+const toPunchLocation = (p) =>
+  p?.validationStatus
+    ? {
+        officeName: p.officeName || p.office?.name || null,
+        distanceMeters: p.distanceMeters ?? null,
+        accuracy: p.accuracy ?? null,
+        validationStatus: p.validationStatus,
+        reviewStatus: p.reviewStatus || null,
+      }
+    : null;
+
+const rowReview = (rec) => {
+  const states = [rec.checkIn?.reviewStatus, rec.checkOut?.reviewStatus];
+  return ['pending', 'rejected', 'approved'].find((s) => states.includes(s)) || null;
+};
+
+// Location data for the board. A backend that already sends it on the
+// dashboard response wins; otherwise it's filled from the Attendance
+// locations API (same permission check), so this also works against a
+// server that predates the dashboard location fields.
+function useDashboardLocations(data) {
+  const { data: perms } = useGetMyGeoPermissionsQuery();
+  const backendHasIt = data?.canViewLocations !== undefined;
+  const canView = backendHasIt ? Boolean(data.canViewLocations) : Boolean(perms?.canViewLocations);
+  const canReview = backendHasIt ? Boolean(data.canReviewExceptions) : Boolean(perms?.canReviewExceptions);
+  const skip = !data || backendHasIt || !canView;
+  const day = todayIso();
+  const poll = { pollingInterval: POLL_MS, skip };
+
+  const { data: today } = useGetAttendanceLocationsQuery({ startDate: day, endDate: day, page: 1, limit: 200 }, poll);
+  const { data: pendingAll } = useGetAttendanceLocationsQuery({ reviewStatus: 'pending', startDate: '2000-01-01', endDate: day, page: 1, limit: 1 }, poll);
+
+  const employees = useMemo(() => {
+    const list = data?.employees || [];
+    if (backendHasIt || !canView || !today?.items) return list;
+    const byUser = new Map(today.items.map((rec) => [String(rec.user?._id || rec.user), rec]));
+    return list.map((e) => {
+      const rec = byUser.get(String(e._id));
+      if (!rec) return e;
+      return {
+        ...e,
+        recordId: rec._id,
+        checkInLocation: toPunchLocation(rec.checkIn),
+        checkOutLocation: toPunchLocation(rec.checkOut),
+        locationReview: rowReview(rec),
+      };
+    });
+  }, [data, backendHasIt, canView, today]);
+
+  const pendingReviews = backendHasIt ? data?.pending?.locationReviews : pendingAll?.pagination?.total ?? 0;
+  return { employees, canView, canReview, pendingReviews };
+}
 
 export default function DashboardTab({ onNavigate }) {
   const { data, isLoading, isFetching, isError, refetch, fulfilledTimeStamp } = useGetAdminDashboardQuery(undefined, {
@@ -46,6 +140,8 @@ export default function DashboardTab({ onNavigate }) {
     refetchOnMountOrArgChange: true,
     refetchOnFocus: true,
   });
+  const [openRecordId, setOpenRecordId] = useState(null);
+  const loc = useDashboardLocations(data);
 
   if (isLoading) return <Spinner />;
   // No summary means an older backend answered (it returns a different
@@ -100,12 +196,31 @@ export default function DashboardTab({ onNavigate }) {
       <div className="pqa-grid">
         <ActionButton icon={CalendarIcon} label="Leave requests" count={pending.leaves} onClick={() => onNavigate?.('leave')} />
         <ActionButton icon={EditIcon} label="Corrections" count={pending.corrections} onClick={() => onNavigate?.('corrections')} />
+        {loc.canView ? (
+          <ActionButton icon={CheckSquareIcon} label="Location reviews" count={loc.pendingReviews} onClick={() => onNavigate?.('attendanceLocations')} />
+        ) : null}
         {/* <ActionButton icon={ClockIcon} label="Overtime" count={pending.overtime} onClick={() => onNavigate?.('overtime')} /> */}
         <ActionButton icon={UserIcon} label="Employees" onClick={() => onNavigate?.('employees')} />
         <ActionButton icon={BriefcaseIcon} label="Attendance calendar" onClick={() => onNavigate?.('attendanceCalendar')} />
       </div>
 
-      <TodayAttendance employees={data.employees || []} />
+      {loc.canView ? (
+        <LocationMonitor
+          employees={loc.employees}
+          onOpen={setOpenRecordId}
+          onViewAll={() => onNavigate?.('attendanceLocations')}
+        />
+      ) : null}
+
+      <TodayAttendance employees={loc.employees} showLocations={loc.canView} onOpen={setOpenRecordId} />
+
+      {loc.canView ? (
+        <LocationDetailModal
+          recordId={openRecordId}
+          canReview={loc.canReview}
+          onClose={() => setOpenRecordId(null)}
+        />
+      ) : null}
 
       <div className="chart-grid">
         <div className="chart-card">
@@ -172,7 +287,78 @@ function ActionButton({ icon: Icon, label, count, onClick }) {
   );
 }
 
-function TodayAttendance({ employees }) {
+// Today's location results at a glance, with the check-ins that need a
+// decision listed underneath so they can be reviewed without leaving.
+function LocationMonitor({ employees, onOpen, onViewAll }) {
+  const [bucket, setBucket] = useState('attention');
+
+  const withBucket = useMemo(
+    () => employees.map((e) => ({ e, b: locationBucket(e) })).filter((x) => x.b),
+    [employees]
+  );
+  const counts = useMemo(() => {
+    const c = {};
+    withBucket.forEach(({ b }) => { c[b] = (c[b] || 0) + 1; });
+    return c;
+  }, [withBucket]);
+  const attentionCount = withBucket.filter(({ b }) => !CLEAN_BUCKETS.includes(b)).length;
+
+  const order = Object.fromEntries(LOCATION_BUCKETS.map((b, i) => [b.key, i]));
+  const rows = withBucket
+    .filter(({ b }) => (bucket === 'attention' ? !CLEAN_BUCKETS.includes(b) : b === bucket))
+    .sort((x, y) => order[x.b] - order[y.b]);
+
+  return (
+    <div className="card">
+      <div className="sec-h">
+        <div className="sec-t">Location monitoring</div>
+        <button className="btn btn-g btn-sm" onClick={onViewAll}>Open locations ›</button>
+      </div>
+
+      <div className="dash-filters">
+        <button className={`dash-chip ${bucket === 'attention' ? 'on' : ''}`} onClick={() => setBucket('attention')}>
+          Needs attention <span>{attentionCount}</span>
+        </button>
+        {LOCATION_BUCKETS.filter((b) => counts[b.key] || b.key === 'review' || b.key === 'inside').map((b) => (
+          <button key={b.key} className={`dash-chip ${bucket === b.key ? 'on' : ''}`} onClick={() => setBucket(b.key)}>
+            <i className={`dash-dot g-${b.tone}`} />{b.label} <span>{counts[b.key] || 0}</span>
+          </button>
+        ))}
+      </div>
+
+      {rows.length ? (
+        rows.map(({ e, b }) => {
+          const meta = LOCATION_BUCKETS.find((x) => x.key === b);
+          const inLine = locationLine(e.checkInLocation);
+          return (
+            <div key={e._id} className="urow click" onClick={() => e.recordId && onOpen(e.recordId)}>
+              <div className="uav">{initials(e.name)}</div>
+              <div className="uinfo">
+                <div className="uname">{e.name}</div>
+                <div className="uemail">{[e.employeeCode, e.department].filter(Boolean).join(' · ')}</div>
+              </div>
+              <div className="dash-times">
+                <div><b>{fmtTime(e.checkIn)}</b>{e.checkOut ? <> → <b>{fmtTime(e.checkOut)}</b></> : null}</div>
+                {inLine ? <div className="dash-muted">{inLine}</div> : null}
+              </div>
+              <div className="dash-pills">
+                <span className={`gpill g-${meta.tone}`}>{meta.label}</span>
+                {b === 'review' ? <span className="dash-muted">Click to review</span> : null}
+              </div>
+            </div>
+          );
+        })
+      ) : (
+        <EmptyState>
+          {bucket === 'attention' ? 'All of today’s check-ins are inside their office geofence' : 'No check-ins in this group today'}
+        </EmptyState>
+      )}
+    </div>
+  );
+}
+
+function TodayAttendance({ employees, showLocations, onOpen }) {
+  const filters = showLocations ? FILTERS : FILTERS.filter((f) => !f.needsLocations);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [department, setDepartment] = useState('');
@@ -206,7 +392,7 @@ function TodayAttendance({ employees }) {
       </div>
 
       <div className="dash-filters">
-        {FILTERS.map((f) => (
+        {filters.map((f) => (
           <button key={f.key} className={`dash-chip ${filter === f.key ? 'on' : ''}`} onClick={() => setFilter(f.key)}>
             {f.label} <span>{counts[f.key]}</span>
           </button>
@@ -232,7 +418,7 @@ function TodayAttendance({ employees }) {
       </div>
 
       {rows.length ? (
-        rows.map((e) => <TodayRow key={e._id} employee={e} />)
+        rows.map((e) => <TodayRow key={e._id} employee={e} onOpen={onOpen} />)
       ) : (
         <EmptyState>{employees.length ? 'No employees match these filters' : 'No active employees yet'}</EmptyState>
       )}
@@ -240,10 +426,13 @@ function TodayAttendance({ employees }) {
   );
 }
 
-function TodayRow({ employee: e }) {
+function TodayRow({ employee: e, onOpen }) {
   const sub = [e.employeeCode, e.designation || e.department].filter(Boolean).join(' · ');
+  const inLine = locationLine(e.checkInLocation);
+  const outLine = locationLine(e.checkOutLocation);
+  const canOpen = Boolean(onOpen && e.recordId);
   return (
-    <div className="urow">
+    <div className={`urow ${canOpen ? 'click' : ''}`} onClick={canOpen ? () => onOpen(e.recordId) : undefined}>
       <div className="uav" style={e.status === 'not_checked_in' ? { background: 'var(--g300)' } : undefined}>{initials(e.name)}</div>
       <div className="uinfo">
         <div className="uname">{e.name}</div>
@@ -260,14 +449,29 @@ function TodayRow({ employee: e }) {
               {e.isLate ? <span className="dash-flag late">Late {e.lateMinutes}m</span> : null}
               {e.isEarlyLeave ? <span className="dash-flag">Left early {e.earlyLeaveMinutes}m</span> : null}
             </div>
+            {inLine ? <div className="dash-muted">In: {inLine}</div> : null}
+            {outLine ? <div className="dash-muted">Out: {outLine}</div> : null}
           </>
         ) : e.status === 'on_leave' && e.leaveType ? (
           <div className="dash-muted">{e.leaveType}</div>
         ) : null}
       </div>
-      <AttendanceStatusPill status={e.status} />
+      <div className="dash-pills">
+        <AttendanceStatusPill status={e.status} />
+        <RowLocationPill employee={e} />
+      </div>
     </div>
   );
+}
+
+// Pending review reads as "In review"; otherwise only flag punches that
+// weren't a clean in-geofence check-in, so normal rows stay quiet.
+function RowLocationPill({ employee: e }) {
+  if (e.locationReview === 'pending') return <span className="gpill g-warn">In review</span>;
+  const flagged = [e.checkInLocation, e.checkOutLocation].find(
+    (l) => l && (l.reviewStatus === 'rejected' || l.reviewStatus === 'approved' || !['valid', 'not_required'].includes(l.validationStatus))
+  );
+  return flagged ? <LocationBadge validationStatus={flagged.validationStatus} reviewStatus={flagged.reviewStatus} /> : null;
 }
 
 const whenLabel = (days) => (days === 1 ? 'Tomorrow' : `In ${days} days`);

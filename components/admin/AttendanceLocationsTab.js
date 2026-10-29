@@ -57,6 +57,10 @@ export default function AttendanceLocationsTab({ companyId }) {
   const [openId, setOpenId] = useState(null);
   
   const { data: perms } = useGetMyGeoPermissionsQuery();
+  const scope = { companyId: companyId || undefined };
+  const { data: usersData } = useGetUsersQuery({ page: 1, limit: 300, role: 'employee', isActive: true, ...scope });
+  const { data: departments } = useGetDepartmentsQuery(scope);
+  const { data: officeData } = useGetOfficeLocationsQuery({ limit: 200, ...scope });
 
   const { data, isLoading, isFetching, isError, error } = useGetAttendanceLocationsQuery({
     ...filters,

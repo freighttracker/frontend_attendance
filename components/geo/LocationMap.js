@@ -61,6 +61,7 @@ export default function LocationMap({ circles = [], markers = [], picked = null,
 
   useEffect(() => {
     let cancelled = false;
+    let sizeTimer = null;
     import('leaflet').then((mod) => {
       const L = mod.default || mod;
       if (cancelled || !containerRef.current || mapRef.current) return;
@@ -72,13 +73,23 @@ export default function LocationMap({ circles = [], markers = [], picked = null,
       map.on('click', (e) => onPickRef.current?.({ latitude: e.latlng.lat, longitude: e.latlng.lng }));
       mapRef.current = map;
       // Maps inside an animating modal measure 0x0 on first paint.
-      setTimeout(() => map.invalidateSize(), 250);
+      sizeTimer = setTimeout(() => {
+        if (mapRef.current === map) map.invalidateSize({ animate: false });
+      }, 250);
       setReady(true);
     });
     return () => {
       cancelled = true;
-      mapRef.current?.remove();
+      clearTimeout(sizeTimer);
+      const map = mapRef.current;
       mapRef.current = null;
+      if (map) {
+        // Stop any in-flight pan/zoom first; otherwise its transition-end
+        // handler runs after remove() and reads _leaflet_pos off a gone pane.
+        map.stop();
+        map.off();
+        map.remove();
+      }
     };
   }, []);
 
@@ -92,6 +103,7 @@ export default function LocationMap({ circles = [], markers = [], picked = null,
     const L = leafletRef.current;
     const map = mapRef.current;
     const group = groupRef.current;
+    if (!map || !group) return;
     group.clearLayers();
     const points = [];
 
@@ -118,20 +130,21 @@ export default function LocationMap({ circles = [], markers = [], picked = null,
       points.push([m.latitude, m.longitude]);
     });
 
-    if (points.length > 1) map.fitBounds(points, { padding: [28, 28], maxZoom: 17 });
-    else if (points.length === 1) map.setView(points[0], 16);
+    if (points.length > 1) map.fitBounds(points, { padding: [28, 28], maxZoom: 17, animate: false });
+    else if (points.length === 1) map.setView(points[0], 16, { animate: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, contentKey]);
 
   useEffect(() => {
     if (!ready) return;
     const L = leafletRef.current;
+    if (!mapRef.current || !pickRef.current) return;
     pickRef.current.clearLayers();
     if (picked && isNum(picked.latitude) && isNum(picked.longitude)) {
       L.circleMarker([picked.latitude, picked.longitude], { radius: 8, color: '#fff', weight: 2, fillColor: MAP_COLORS.picked, fillOpacity: 1 })
         .bindTooltip(textNode('Selected location'))
         .addTo(pickRef.current);
-      if (!circles.length && !markers.length) mapRef.current.setView([picked.latitude, picked.longitude], Math.max(mapRef.current.getZoom(), 16));
+      if (!circles.length && !markers.length) mapRef.current.setView([picked.latitude, picked.longitude], Math.max(mapRef.current.getZoom(), 16), { animate: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, picked?.latitude, picked?.longitude]);

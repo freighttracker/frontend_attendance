@@ -30,9 +30,9 @@ const TABS = [
   { key: 'dashboard', label: 'Dashboard' },
   { key: 'employees', label: 'Employees' },
   { key: 'leave', label: 'Leave' },
+  { key: 'corrections', label: 'Corrections' },
   { key: 'salary', label: 'Salary' },
   { key: 'salaryFields', label: 'Salary Fields' },
-  { key: 'corrections', label: 'Corrections' },
   { key: 'overtime', label: 'Overtime' },
   { key: 'late', label: 'Late Arrivals' },
   { key: 'halfDays', label: 'Half Days' },
@@ -42,6 +42,35 @@ const TABS = [
   { key: 'holidays', label: 'Holidays' },
   { key: 'settings', label: 'Settings' },
 ];
+
+// Single source of truth for the admin tab order.
+const TAB_ORDER = [
+  'dashboard',
+  'corrections',
+  'attendanceCalendar',
+  'offices',               // not in your list, kept next to Attendance Locations
+  'attendanceLocations',
+  'attendanceReport',
+  'employees',
+  'leave',
+  'salary',
+  'salaryFields',
+  'overtime',
+  'late',
+  'halfDays',
+  'reports',
+  'holidays',              // not in your list, kept just before Settings
+  'settings',
+  'geoAudit',
+];
+
+function orderTabs(list) {
+  const rank = (key) => {
+    const i = TAB_ORDER.indexOf(key);
+    return i === -1 ? TAB_ORDER.length : i; // unknown tabs go last
+  };
+  return [...list].sort((a, b) => rank(a.key) - rank(b.key));
+}
 
 // A platform Super Admin's entire job is creating/managing companies - they
 // don't touch any single company's day-to-day HR data. They get a
@@ -63,7 +92,7 @@ function geoTabsFor(perms, role) {
     tabs.push({ key: 'offices', label: 'Office Locations' });
   }
   if (perms.canViewLocations) tabs.push({ key: 'attendanceLocations', label: 'Attendance Locations' });
-  if (role === 'admin' || role === 'company_admin') tabs.push({ key: 'geoAudit', label: 'Location Audit' });
+  if (role === 'admin') tabs.push({ key: 'geoAudit', label: 'Location Audit' });
   return tabs;
 }
 
@@ -96,6 +125,7 @@ function SuperAdminHome() {
 }
 
 export default function AdminPage() {
+
   const user = useAppSelector(selectCurrentUser);
   const isPlatformSuperAdmin = user?.role === 'superadmin';
 
@@ -104,7 +134,7 @@ export default function AdminPage() {
   const { items, pagination } = unwrapList(data);
   const pendingCount = pagination?.total ?? items.length;
   const { data: geoPerms } = useGetMyGeoPermissionsQuery(undefined, { skip: isPlatformSuperAdmin });
-  const tabs = [...TABS.slice(0, -1), ...geoTabsFor(geoPerms, user?.role), TABS[TABS.length - 1]];
+  const tabs = orderTabs([...TABS, ...geoTabsFor(geoPerms, user?.role)]);
 
   if (isPlatformSuperAdmin) {
     return <SuperAdminHome />;
@@ -135,6 +165,7 @@ export default function AdminPage() {
         {active === 'offices' ? <OfficeLocationsTab /> : null}
         {active === 'attendanceLocations' ? <AttendanceLocationsTab /> : null}
         {active === 'geoAudit' ? <GeoAuditTab /> : null}
+
     </>
   );
 }

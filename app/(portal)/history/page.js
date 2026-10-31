@@ -13,7 +13,7 @@ import MyAttendanceSummary from '@/components/attendance/MyAttendanceSummary';
 import AttendanceCalendar from '@/components/attendance/AttendanceCalendar';
 import EmptyState from '@/components/ui/EmptyState';
 import Spinner from '@/components/ui/Spinner';
-
+.0
 export default function HistoryPage() {
   
   const now = new Date();
@@ -26,12 +26,10 @@ export default function HistoryPage() {
   const [year, mo] = filterMonth ? filterMonth.split('-') : [null, null];
   const startDate = filterMonth ? `${year}-${mo}-01` : undefined;
   const endDate = filterMonth ? `${year}-${mo}-${String(new Date(Number(year), Number(mo), 0).getDate()).padStart(2, '0')}` : undefined;
-
   const { data, isLoading } = useGetAttendanceHistoryQuery({ page: 1, limit: 100, startDate, endDate });
-  
   const { items } = unwrapList(data);
   const records = items.map(normalizeAttendanceRecord).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-
+  
   return (
     <>
       <div className="ph">

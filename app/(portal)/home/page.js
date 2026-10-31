@@ -24,6 +24,7 @@ export default function HomePage() {
       <RecentAttendance />
       <UpcomingHolidays />
       <LeaveApplyModal open={leaveModalOpen} onClose={() => setLeaveModalOpen(false)} />
+    
       <RequestCorrectionModal open={correctionModalOpen} onClose={() => setCorrectionModalOpen(false)} />
     </>
   );

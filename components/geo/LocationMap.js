@@ -136,6 +136,7 @@ export default function LocationMap({ circles = [], markers = [], picked = null,
   }, [ready, contentKey]);
 
   useEffect(() => {
+    
     if (!ready) return;
     const L = leafletRef.current;
     if (!mapRef.current || !pickRef.current) return;
